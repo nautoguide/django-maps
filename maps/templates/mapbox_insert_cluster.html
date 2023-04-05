@@ -1,0 +1,220 @@
+{% load static %}
+
+<script>
+	let options = {
+		container: 'map',
+		style: "{% static '/mapbox/xyz.json' %}",
+		maxZoom: 20,
+		minZoom: 0,
+		pitch: 60,
+		center: [-0.9307443, 50.7980974],
+		zoom: 5
+	}
+
+	const clusterIndex = new Supercluster({
+		radius: 50,
+		maxZoom: 12
+	});
+
+	const icons = {{ icons|safe }};
+
+	let globalGeojson={"type":"FeatureCollection","features":[]};
+	clusterIndex.load(globalGeojson.features);
+
+
+
+	let page=1;
+
+	const map = new maplibregl.Map(options);
+
+	map.on('load', function () {
+		loadIcons(map, icons);
+
+		map.addSource('clusters', {
+			type: 'geojson',
+			data: getClusters()
+		});
+
+		map.addLayer({
+			id: 'clusters-outer',
+			type: 'circle',
+			source: 'clusters',
+			paint: {
+				'circle-radius': [
+					'step',
+					['get', 'point_count'],
+					7, 10, // Radius for clusters with 10 or less points
+					12, 50, // Radius for clusters with 50 or less points
+					17, 100, // Radius for clusters with 100 or less points
+					22, 300, // Radius for clusters with 300 or less points
+					28, 750, // Radius for clusters with 750 or less points
+					28, // Radius for clusters with more than 750 points
+				],
+				'circle-color': '#062b33',
+				'circle-opacity': 0.5
+			}
+		});
+
+		map.addLayer({
+			id: 'clusters',
+			type: 'circle',
+			source: 'clusters',
+			paint: {
+				'circle-radius': [
+					'step',
+					['get', 'point_count'],
+					5, 10, // Radius for clusters with 10 or less points
+					10, 50, // Radius for clusters with 50 or less points
+					15, 100, // Radius for clusters with 100 or less points
+					20, 300, // Radius for clusters with 300 or less points
+					25, 750, // Radius for clusters with 750 or less points
+					25, // Radius for clusters with more than 750 points
+				],
+				'circle-color': [
+					'step',
+					['get', 'point_count'],
+					'#72cde7', 10, // Color for clusters with 10 or less points
+					'#3e90a6', 50, // Color for clusters with 50 or less points
+					'#347e98', 100, // Color for clusters with 100 or less points
+					'#286679', 300, // Color for clusters with 300 or less points
+					'#135262', 750, // Color for clusters with 750 or less points
+					'#03485b', // Color for clusters with more than 750 points
+				],
+				'circle-opacity': 0.8
+			}
+		});
+
+
+
+		map.addLayer({
+
+			id: 'cluster-labels',
+			type: 'symbol',
+			source: 'clusters',
+			filter: ['has', 'point_count'],
+			'layout': {
+				"text-font": ["Open Sans Regular"],
+				'text-field': ['get', 'point_count'],
+				'text-variable-anchor': ['center', 'bottom', 'left', 'right'],
+				'text-radial-offset': 0.5,
+				'text-justify': 'auto',
+				'text-size': 12
+			},
+			paint: {
+				'text-color': '#ffffff'
+			}
+		});
+
+
+		map.addLayer({
+			id: 'unclustered-points',
+			type: 'symbol',
+			source: 'clusters',
+			filter: ['!=', 'cluster', true],
+			layout: {
+				'icon-image': [
+					'match',
+					['get', 'category'], // Get the 'category' property from the feature
+					'ship', 'ship',
+					'homeport', 'homeport',
+					'memorial', 'memorial',
+					'school', 'school',
+					'submarine', 'submarine',
+					'sailor'
+				],
+				'icon-size': 1, // Set the icon size
+				'icon-allow-overlap': true,
+				'icon-anchor': 'bottom'
+			},
+			paint: {
+				'icon-opacity': 1 // Set the opacity of the icons
+			}
+		});
+
+		clusterLoader();
+
+
+	});
+
+	map.on('click', 'unclustered-points', (event) => {
+		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
+		if (features.length > 0) {
+			console.log(features[0].properties.id);
+			window.location = `/Map/${features[0].properties.id}/`;
+		}
+	});
+
+	map.on('click', 'clusters', (e) => {
+		const clusterCoordinates = e.features[0].geometry.coordinates;
+
+		// Set the new zoom level, making sure it doesn't exceed the maximum allowed zoom level
+		const newZoom = Math.min(map.getZoom() + 2, map.getMaxZoom());
+
+		// Center the map on the clicked cluster and zoom in
+		map.easeTo({
+			center: clusterCoordinates,
+			zoom: newZoom,
+			duration: 1000 // Animate the transition for 1000 ms
+		});
+
+	});
+
+	map.on('mouseenter', 'clusters', () => {
+		map.getCanvas().style.cursor = 'pointer';
+	});
+
+	map.on('mouseleave', 'clusters', () => {
+		map.getCanvas().style.cursor = '';
+	});
+
+	map.on('moveend', () => {
+		map.getSource('clusters').setData(getClusters());
+	});
+
+	function getClusters() {
+		const bbox = map.getBounds().toArray().flat();
+		const zoom = map.getZoom();
+		return {type:"FeatureCollection","features":clusterIndex.getClusters(bbox, Math.round(zoom))};
+	}
+
+	function clusterLoader() {
+		fetch(`{{ json_url }}?p=${page}&ps=500`)
+			.then(response => response.json())
+			.then(data => {
+
+				globalGeojson.features=[...globalGeojson.features,...data.features];
+				//console.log(data);
+				clusterIndex.load(globalGeojson.features);
+				map.getSource('clusters').setData(getClusters());
+				if(data.more===false) {
+					let element = document.getElementById("map_spin");
+					element.classList.add("hidden")
+					//const bbox = turf.bbox(globalGeojson);
+					//map.fitBounds(bbox, {padding: 200})
+				} else {
+					page++;
+					map.triggerRepaint();
+                    setTimeout(clusterLoader,100);
+                }
+
+			}).catch(error => console.error(error));
+    }
+
+	function loadIcons(map, icons) {
+		icons.forEach((icon) => {
+			map.loadImage(icon.url, (error, image) => {
+				if (error) {
+					console.error('Error loading icon:', error);
+					return;
+				}
+
+				// Add the image to the map
+				if (!map.hasImage(icon.name)) {
+					map.addImage(icon.name, image);
+				}
+			});
+		});
+	}
+
+
+</script>
