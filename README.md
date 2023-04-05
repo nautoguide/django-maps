@@ -2,11 +2,21 @@
 
 ## Install
 
-Local dev mode
+Local dev mode using built package
 
 ```
 python3 -m pip install --user ~/projects/django-maps/dist/django-maps-0.1.tar.gz
 ```
+
+
+Local dev mode in edit mode
+
+```
+sudo python3 -m pip install --user -e ~/projects/django-maps
+```
+
+Despite usermode you may need the sudo
+
 
 From github
 ```
