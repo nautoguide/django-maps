@@ -1,0 +1,136 @@
+{% load static %}
+
+<script>
+	let options = {
+		container: 'map',
+		style: "{% static '/mapbox/xyz.json' %}",
+		maxZoom: 15,
+		minZoom: 0,
+		pitch: 60,
+		center: [-0.9307443, 50.7980974],
+		zoom: 10
+	}
+
+	const icons = {{ icons|safe }};
+
+	const map = new maplibregl.Map(options);
+
+	map.on('load', function () {
+		loadIcons(map, icons);
+
+		fetch(`{{ json_url }}${ '{{query}}'!=='None' ?`?{{query}}=${document.getElementById('{{query}}').value}`:''}`)
+			.then(response => response.json())
+			.then(data => {
+				// Process the retrieved data here
+				map.addSource('data', {
+					type: 'geojson',
+					data: data
+				});
+
+				{% if links == True %}
+                    const lineSource = createLineSource(data.features);
+
+                    map.addSource('line-source', {
+                        type: 'geojson',
+                        data: lineSource,
+                    });
+
+                    map.addLayer({
+                        id: 'lines-between-features',
+                        type: 'line',
+                        source: 'line-source',
+                        paint: {
+                            'line-color': '#F9AA33',
+                            'line-width': 5,
+                            'line-opacity':0.2
+                        }
+                    });
+				{% endif %}
+
+				map.addLayer({
+					id: 'data',
+					type: 'symbol',
+					source: 'data',
+					layout: {
+						'icon-image': [
+							'match',
+							['get', 'category'], // Get the 'category' property from the feature
+							'ship', 'ship',
+							'homeport', 'homeport',
+							'memorial', 'memorial',
+							'school', 'school',
+							'submarine', 'submarine',
+							'sailor'
+                            ],
+						'icon-size': 1, // Set the icon size
+						'icon-allow-overlap': true,
+						'icon-anchor': 'bottom'
+					},
+					paint: {
+						'icon-opacity': 1 // Set the opacity of the icons
+					}
+				});
+				const bbox = turf.bbox(data);
+				map.fitBounds(bbox, {padding: 20})
+			})
+			.catch(error => console.error(error));
+	});
+
+	map.on('click', 'data', (event) => {
+		const features = map.queryRenderedFeatures(event.point, {layers: ['data']});
+		if (features.length > 0) {
+            window.location = `/Map/${features[0].properties.id}/`;
+		}
+	});
+
+	function reload_map_data() {
+		fetch(`{{ json_url }}?q=${document.getElementById('q').value}`)
+			.then(response => response.json())
+			.then(data => {
+				// Process the retrieved data here
+				map.getSource('data').setData(data);
+				const bbox = turf.bbox(data);
+				map.fitBounds(bbox, {padding: 200})
+			});
+    }
+
+	function loadIcons(map, icons) {
+		icons.forEach((icon) => {
+			map.loadImage(icon.url, (error, image) => {
+				if (error) {
+					console.error('Error loading icon:', error);
+					return;
+				}
+
+				// Add the image to the map
+				if (!map.hasImage(icon.name)) {
+					map.addImage(icon.name, image);
+				}
+			});
+		});
+	}
+
+	function createLineSource(features) {
+		// Get the first feature's coordinates
+		const firstFeatureCoords = features[0].geometry.coordinates;
+
+		// Create a GeoJSON LineString for each connection
+		const lines = features.slice(1).map((feature) => {
+			return {
+				type: 'Feature',
+				geometry: {
+					type: 'LineString',
+					coordinates: [firstFeatureCoords, feature.geometry.coordinates],
+				},
+			};
+		});
+
+		// Create a GeoJSON FeatureCollection for the line source
+		return {
+			type: 'FeatureCollection',
+			features: lines,
+		};
+	}
+
+
+</script>
