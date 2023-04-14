@@ -1,9 +1,11 @@
 {% load static %}
 
+{% include 'mapbox_headers.html' %}
+
 <script>
 	let options = {
 		container: 'map',
-		style: "{% static '/mapbox/xyz.json' %}",
+		style: '{{ style }}',
 		maxZoom: 15,
 		minZoom: 0,
 		pitch: 60,
@@ -13,20 +15,20 @@
 
 	const icons = {{ icons|safe }};
 
+	const query = '{{ query }}';
+
+	let url= '{{ json_url }}';
+	if( query !== 'None')
+		url+='?'+query+'='+document.getElementById('{{query}}').value;
+
 	const map = new maplibregl.Map(options);
 
 	map.on('load', function () {
 		loadIcons(map, icons);
-
-		fetch(`{{ json_url }}${ '{{query}}'!=='None' ?`?{{query}}=${document.getElementById('{{query}}').value}`:''}`)
+		fetch(url)
 			.then(response => response.json())
 			.then(data => {
-				// Process the retrieved data here
-				map.addSource('data', {
-					type: 'geojson',
-					data: data
-				});
-
+				map.getSource('data').setData(data);
 				{% if links == True %}
                     const lineSource = createLineSource(data.features);
 
@@ -47,29 +49,7 @@
                     });
 				{% endif %}
 
-				map.addLayer({
-					id: 'data',
-					type: 'symbol',
-					source: 'data',
-					layout: {
-						'icon-image': [
-							'match',
-							['get', 'category'], // Get the 'category' property from the feature
-							'ship', 'ship',
-							'homeport', 'homeport',
-							'memorial', 'memorial',
-							'school', 'school',
-							'submarine', 'submarine',
-							'sailor'
-                            ],
-						'icon-size': 1, // Set the icon size
-						'icon-allow-overlap': true,
-						'icon-anchor': 'bottom'
-					},
-					paint: {
-						'icon-opacity': 1 // Set the opacity of the icons
-					}
-				});
+
 				const bbox = turf.bbox(data);
 				map.fitBounds(bbox, {padding: 20})
 			})
@@ -79,7 +59,7 @@
 	map.on('click', 'data', (event) => {
 		const features = map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0) {
-            window.location = `/Map/${features[0].properties.id}/`;
+            window.location = `{{ click_url }}`;
 		}
 	});
 
@@ -88,6 +68,7 @@
 			.then(response => response.json())
 			.then(data => {
 				// Process the retrieved data here
+                debugger;
 				map.getSource('data').setData(data);
 				const bbox = turf.bbox(data);
 				map.fitBounds(bbox, {padding: 200})

@@ -1,0 +1,53 @@
+{
+  "version": 8,
+  "sprite": "http://localhost:8000/static/sprites/sprite",
+  "sources": {
+    "cxyz": {
+      "type": "raster",
+      "tiles": [
+        "https://cartodb-basemaps-d.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png"
+      ],
+      "tileSize": 256
+    },
+    "data": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    }
+  },
+  "layers": [
+    {
+      "id": "simple-tiles",
+      "type": "raster",
+      "source": "cxyz",
+      "minzoom": 0,
+      "maxzoom": 22
+    },
+    {
+      "id": "data",
+      "type": "symbol",
+      "source": "data",
+      "layout": {
+        "icon-image": [
+          "match",
+          ["get", "category"],
+          "ship", "ship",
+          "homeport", "homeport",
+          "memorial", "memorial",
+          "school", "school",
+          "submarine", "submarine",
+          "sailor"
+        ],
+        "icon-size": 1,
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom"
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    }
+  ],
+  "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf"
+}
