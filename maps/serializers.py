@@ -11,7 +11,9 @@ def feature_serialize_geojson(queryset, more, properties=["category", "id"]):
 
         local_properties = {}
         for prop in properties:
-            local_properties[prop] = combined_data[prop]
+            if prop in combined_data:
+                local_properties[prop] = combined_data[prop]
+
         feature = {'geometry': json.loads(obj.location.geojson), 'properties': local_properties}
 
         serialized_data.append(feature)

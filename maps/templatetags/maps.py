@@ -8,6 +8,7 @@ register = template.Library()
 def mapbox_simple(**kwargs):
     style = kwargs.get('style', '/static/map_styles/cartodb-xyz.json')
     links = kwargs.get('links', False)
+    maxZoom = kwargs.get('maxZoom', 15)
     query = kwargs.get('query', None)
     icons = kwargs.get('icons', [])
     center = kwargs.get('center', [-0.9307443, 50.7980974])

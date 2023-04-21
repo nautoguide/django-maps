@@ -11256,6 +11256,38 @@
       }
     },
     {
+      "id": "data-circles",
+      "type": "circle",
+      "source": "data",
+      "paint": {
+        "circle-pitch-alignment": "map",
+        "circle-translate": [0,25],
+        "circle-translate-anchor": "map",
+        "circle-radius": {
+          "base": 1.75,
+          "stops": [
+            [12, 2],
+            [22, 180]
+          ]
+        },
+        "circle-color": [
+          "case",
+          ["has", "color"],
+          ["match",
+          ["get", "color"],
+          1,
+            "rgba(0, 255, 0, 0.5)",
+          2,
+            "rgba(255, 0, 0, 0.5)",
+          3,
+            "rgba(0, 0, 255, 0.5)",
+            "rgba(0, 0, 0, 0)"
+        ],
+        "rgba(0, 0, 0, 0)"
+          ]
+      }
+    },
+    {
       "id": "data",
       "type": "symbol",
       "source": "data",
