@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 function mapboxAdminFromElement(element) {
-	const widgetId = element.id;
+	const widgetId = element.dataset.id;
 	const widgetValue = element.dataset.value;
 	mapboxAdmin(widgetId, widgetValue);
 }
@@ -15,7 +15,7 @@ function mapboxAdminFromElement(element) {
 function mapboxAdmin(widgetId, widgetValue) {
 	//debugger;
 	let options = {
-		container: `${widgetId}`,
+		container: `${widgetId}-map`,
 		style: '/static/map_styles/os-styles.json',
 		maxZoom: 25,
 		minZoom: 0,
@@ -40,7 +40,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 			let pointsArray = [parseFloat(points[1]), parseFloat(points[2])]
 			let pointJson = {
 				"type": "Feature",
-				"geometry": {"coordinates": [pointsArray[1], pointsArray[0]], "type": "Point"},
+				"geometry": {"coordinates": [pointsArray[0], pointsArray[1]], "type": "Point"},
 				"properties": {"icon": "point"}
 			}
 
@@ -62,9 +62,8 @@ function mapboxAdmin(widgetId, widgetValue) {
 				"properties": {"icon": "point"}
 			}]
 		});
-
 		let field = document.getElementById(widgetId);
-		field.value = `POINT(${event.lngLat.lat} ${event.lngLat.lng})`;
+		field.value = `POINT(${event.lngLat.lng} ${event.lngLat.lat})`;
 	});
 
 	function loadIcons(map, icons) {
