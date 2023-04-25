@@ -11294,7 +11294,9 @@
       "layout": {
         "icon-image": "{icon}",
         "icon-size": 1,
-        "icon-allow-overlap": true
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom",
+        "icon-offset": [0, 0]
       },
       "paint": {
         "icon-opacity": 1

@@ -1,12 +1,10 @@
 {% load i18n %}
 
-
-
-<div id="{{ widget.attrs.id }}-map"></div>
+<div id="{{ widget.attrs.id }}" style="height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}"></div>
 MY LOCATION CODE
-<input type="text"
+<input style="display:none" type="text"
        name="{{ widget.name }}"
-       value="{{ widget.value|stringformat:'s' }}"
+       value="{{ widget.value|default_if_none:"POINT(0 0)" }}"
        class="vTextField"
        id="{{ widget.attrs.id }}"
        {% if widget.attrs.size %}size="{{ widget.attrs.size }}"{% endif %}
@@ -14,44 +12,5 @@ MY LOCATION CODE
 
 
 <script>
-    let options = {
-        container: '{{ widget.attrs.id }}-map',
-        style: '/static/map_styles/os-styles.json',
-        maxZoom: 25,
-        minZoom: 0,
-        pitch: 60,
-        center: [-0.9307443, 50.7980974],
-        zoom: 10
-    }
-
-    const icons = {};
-
-    const map = new maplibregl.Map(options);
-
-    map.on('load', function () {
-        loadIcons(map, icons);
-    });
-
-
-    map.on('click',  (event) => {
-        console.log('Map clicked at:', event.lngLat);
-		let field=document.getElementById('{{ widget.attrs.id }}');
-		field.value=`POINT(${event.lngLat.lat} ${event.lngLat.lng})`;
-    });
-
-    function loadIcons(map, icons) {
-        icons.forEach((icon) => {
-            map.loadImage(icon.url, (error, image) => {
-                if (error) {
-                    console.error('Error loading icon:', error);
-                    return;
-                }
-
-                // Add the image to the map
-                if (!map.hasImage(icon.name)) {
-                    map.addImage(icon.name, image);
-                }
-            });
-        });
-    }
+    mapboxAdmin('{{ widget.attrs.id }}','{{widget.value}}')
 </script>
