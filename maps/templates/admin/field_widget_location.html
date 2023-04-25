@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div id="{{ widget.attrs.id }}" style="height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}"></div>
+<div id="{{ widget.attrs.id }}-map" style="height: 300px;" class="init-widget" data-id="{{ widget.attrs.id }}" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}"></div>
 MY LOCATION CODE
 <input style="display:none" type="text"
        name="{{ widget.name }}"
