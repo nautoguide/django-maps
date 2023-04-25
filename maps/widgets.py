@@ -11,6 +11,7 @@ class LocationWidget(Widget):
     class Media:
         js = (
             '/static/js/maplibre-gl.js',
+            '/static/js/mapbox-admin.js',
         )
 
         css = {

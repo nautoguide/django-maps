@@ -1,6 +1,6 @@
 {% load i18n %}
 
-<div id="{{ widget.attrs.id }}-map" style="height: 300px;"></div>
+<div id="{{ widget.attrs.id }}" style="height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}"></div>
 MY LOCATION CODE
 <input style="display:none" type="text"
        name="{{ widget.name }}"
@@ -12,67 +12,5 @@ MY LOCATION CODE
 
 
 <script>
-    let options = {
-        container: '{{ widget.attrs.id }}-map',
-        style: '/static/map_styles/os-styles.json',
-        maxZoom: 25,
-        minZoom: 0,
-        pitch: 0,
-        center: [-0.9307443, 50.7980974],
-        zoom: 10
-    }
-
-    const icons = [
-        {"url":"/static/icons/point.png","name":"point"}
-    ];
-
-    const map = new maplibregl.Map(options);
-
-    map.on('load', function () {
-        loadIcons(map, icons);
-        let point='{{widget.value}}';
-        const regex = /POINT\s*\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/;
-        let points = point.match(regex);
-		if(points.length>0) {
-            let pointsArray = [parseFloat(points[1]), parseFloat(points[2])]
-            let pointJson = {
-                "type": "Feature",
-                "geometry": {"coordinates": [pointsArray[1], pointsArray[0]], "type": "Point"},
-                "properties": {"icon": "point"}
-            }
-
-            map.getSource('data').setData({
-                type: "FeatureCollection",
-                features: [pointJson]
-            });
-        }
-    });
-
-
-    map.on('click',  (event) => {
-        console.log('Map clicked at:', event.lngLat);
-        map.getSource('data').setData({
-            type:"FeatureCollection",
-            features: [{ "type":"Feature","geometry": { "coordinates": [ event.lngLat.lng, event.lngLat.lat ],"type": "Point" }, "properties":{"icon":"point"} }]
-        });
-
-        let field=document.getElementById('{{ widget.attrs.id }}');
-		field.value=`POINT(${event.lngLat.lat} ${event.lngLat.lng})`;
-    });
-
-    function loadIcons(map, icons) {
-        icons.forEach((icon) => {
-            map.loadImage(icon.url, (error, image) => {
-                if (error) {
-                    console.error('Error loading icon:', error);
-                    return;
-                }
-
-                // Add the image to the map
-                if (!map.hasImage(icon.name)) {
-                    map.addImage(icon.name, image);
-                }
-            });
-        });
-    }
+    mapboxAdmin('{{ widget.attrs.id }}','{{widget.value}}')
 </script>

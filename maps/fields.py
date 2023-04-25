@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.gis.geos import GEOSGeometry
-from django.core.exceptions import ValidationError
 from .forms import LocationFormField
 
 
