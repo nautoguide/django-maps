@@ -3,13 +3,19 @@
 {% include 'mapbox_headers.html' %}
 
 <script>
+
+    const maxZoom= parseInt('{{ maxZoom }}');
+    let center= {{ center|safe }};
+	if(center&&center.coordinates)
+		center=center.coordinates;
+
 	let options = {
 		container: 'map',
 		style: '{{ style }}',
-		maxZoom: parseInt('{{ maxzoom }}'),
+		maxZoom: maxZoom,
 		minZoom: 0,
 		pitch: 60,
-		center: [-0.9307443, 50.7980974],
+		center: center,
 		zoom: 10
 	}
 
@@ -51,7 +57,7 @@
 
 
 				const bbox = turf.bbox(data);
-				map.fitBounds(bbox, {padding: 20})
+				map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
 			})
 			.catch(error => console.error(error));
 	});
@@ -112,6 +118,10 @@
 			features: lines,
 		};
 	}
+
+	function moveToPoint(point,zoom) {
+        map.flyTo({center: point.coordinates,zoom:zoom});
+    }
 
 
 </script>

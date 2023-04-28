@@ -17,6 +17,7 @@ def mapbox_simple(**kwargs):
 
     return render_to_string('mapbox_simple_map_insert.html',
                             {'links': links, 'json_url': json_url, 'query': query, 'icons': icons, 'center': center,
+                             'maxZoom': maxZoom,
                              'style': style, 'click_url': click_url})
 
 
