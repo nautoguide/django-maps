@@ -1,7 +1,7 @@
 {% load i18n %}
 
-<div id="{{ widget.attrs.id }}-map" style="height: 300px;" class="init-widget" data-id="{{ widget.attrs.id }}" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}"></div>
-MY LOCATION CODE
+<div id="{{ widget.attrs.id }}-map" style="height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}" data-center="{{ map_center|safe }}"></div>
+
 <input style="display:none" type="text"
        name="{{ widget.name }}"
        value="{{ widget.value|default_if_none:"POINT(0 0)" }}"
@@ -12,5 +12,5 @@ MY LOCATION CODE
 
 
 <script>
-    mapboxAdmin('{{ widget.attrs.id }}','{{widget.value}}')
+    mapboxAdmin('{{ widget.attrs.id }}-map','{{widget.value}}')
 </script>

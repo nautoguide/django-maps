@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 });
 function mapboxAdminFromElement(element) {
-	const widgetId = element.dataset.id;
+	const widgetId = element.id;
 	const widgetValue = element.dataset.value;
 	mapboxAdmin(widgetId, widgetValue);
 }
@@ -15,12 +15,13 @@ function mapboxAdminFromElement(element) {
 function mapboxAdmin(widgetId, widgetValue) {
 	//debugger;
 	let options = {
-		container: `${widgetId}-map`,
+		container: `${widgetId}`,
 		style: '/static/map_styles/os-styles.json',
 		maxZoom: 25,
 		minZoom: 0,
 		pitch: 0,
-		center: [-0.9307443, 50.7980974],
+		//center: [-0.9307443, 50.7980974],
+		center: [-3.510486, 50.395822] ,
 		zoom: 10
 	}
 
@@ -32,22 +33,26 @@ function mapboxAdmin(widgetId, widgetValue) {
 
 	map.on('load', function () {
 		loadIcons(map, icons);
-		//debugger;
+
 		let point = widgetValue;
 		const regex = /POINT\s*\(\s*(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*\)/;
 		let points = point.match(regex);
 		if (points&&points.length > 0) {
 			let pointsArray = [parseFloat(points[1]), parseFloat(points[2])]
-			let pointJson = {
-				"type": "Feature",
-				"geometry": {"coordinates": [pointsArray[0], pointsArray[1]], "type": "Point"},
-				"properties": {"icon": "point"}
-			}
+			if(pointsArray[1]!==0) {
+				let pointJson = {
+					"type": "Feature",
+					"geometry": {"coordinates": [pointsArray[0], pointsArray[1]], "type": "Point"},
+					"properties": {"icon": "point"}
+				}
 
-			map.getSource('data').setData({
-				type: "FeatureCollection",
-				features: [pointJson]
-			});
+				map.getSource('data').setData({
+					type: "FeatureCollection",
+					features: [pointJson]
+				});
+
+				map.jumpTo({center: [pointsArray[0], pointsArray[1]]});
+			}
 		}
 	});
 
@@ -62,7 +67,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 				"properties": {"icon": "point"}
 			}]
 		});
-		let field = document.getElementById(widgetId);
+		let field = document.getElementById(widgetId.replace(/-map/,''));
 		field.value = `POINT(${event.lngLat.lng} ${event.lngLat.lat})`;
 	});
 
