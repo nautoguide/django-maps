@@ -1,11 +1,11 @@
 {
   "version": 8,
-  "sprite": "http://localhost:8000/static/sprites/sprite",
+  "sprite": "{{ scheme }}://{{ host }}/static/sprites/sprite",
   "glyphs": "https://api.os.uk/maps/vector/v1/vts/resources/fonts/{fontstack}/{range}.pbf?key=pwpinLZQQv5Kkwy5fgX0Sc5HSPvrqAGh",
   "sources": {
     "esri": {
       "type": "vector",
-      "url": "/static/map_styles/os-vts.json"
+      "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts.json"
     },
     "data": {
       "type": "geojson",
