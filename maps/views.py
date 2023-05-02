@@ -8,7 +8,8 @@ def mapfiles(request):
     print(request.get_host())
     file = request.GET.get('file')
     scheme = 'http'
-    if request.scheme == 'https':
+    if request.scheme == 'https' or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or request.META.get(
+            'X_FORWARDED_PROTO') == 'https':
         scheme = 'https'
     context = {
         'host': host,
