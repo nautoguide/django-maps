@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "sprite": "http://localhost:8000/static/sprites/sprite",
+  "sprite": "{{ scheme }}://{{ host }}/static/sprites/sprite",
   "sources": {
     "cxyz": {
       "type": "raster",

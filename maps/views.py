@@ -1,3 +1,24 @@
-#from django.shortcuts import render
+import json
+from django.http import JsonResponse
+from django.shortcuts import render
 
-# Create your views here.
+
+def mapfiles(request):
+    host = request.get_host()
+    print(request.get_host())
+    file = request.GET.get('file')
+    scheme = 'http'
+    if request.scheme == 'https':
+        scheme = 'https'
+    context = {
+        'host': host,
+        'scheme': scheme
+
+    }
+    file_actual = f'map_styles/{file}'
+
+    rendered_template = render(request, file_actual, context)
+
+    json_data = json.loads(rendered_template.content.decode())
+
+    return JsonResponse(json_data)
