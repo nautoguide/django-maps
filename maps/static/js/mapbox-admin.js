@@ -16,7 +16,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 	//debugger;
 	let options = {
 		container: `${widgetId}`,
-		style: '/mapfiles?file=os-styles.json',
+		style: '/mapfiles/?file=os-styles.json',
 		maxZoom: 25,
 		minZoom: 0,
 		pitch: 0,

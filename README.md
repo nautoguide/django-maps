@@ -53,8 +53,8 @@ To any template where you need a map add:
 Then for a map add
 
 ```html
-<!- Simple map with links -->
-{% mapbox_simple json_url=json_url links=True icons=icons %}
+<!- Simple map  -->
+{% mapbox_simple json_url=json_url icons=icons style='/mapfiles/?file=os-styles.json' maxZoom=20 center='[-3.510486, 50.395822]' %}
 
 <!- Simple map with links -->
 {% mapbox_cluster json_url %}
@@ -124,6 +124,21 @@ To use the goejson serializer:
 from maps.serializers import feature_serialize_geojson
 
 geojson = feature_serialize_geojson(features, False)
+```
+
+If you need to use the mapfiles included with maps then you need to include a urls.py to cope with it as we
+use template processing to deal with live and local urls:
+
+```python
+from maps.views import mapfiles
+
+
+urlpatterns = [
+    path('Admin/',  admin.site.urls),
+   ....
+    path('mapfiles/', mapfiles)
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 ```
 
 ## Development
