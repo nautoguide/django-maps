@@ -116,6 +116,11 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 		window.map.flyTo({center: point.coordinates, zoom: zoom});
 	}
 
+	window.map.zoomToExtent = function() {
+		const bbox = turf.bbox(window.geojson);
+		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+	}
+
 	function calculateDistance(lat1, lon1, lat2, lon2) {
 		const R = 6371e3; // Earth radius in meters
 		const lat1Rad = lat1 * (Math.PI / 180);
@@ -157,6 +162,17 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 
 	function onPositionUpdate(position) {
 		const { latitude, longitude } = position.coords;
+		let pointJson = {
+			"type": "Feature",
+			"geometry": {"coordinates": [longitude, latitude], "type": "Point"},
+			"properties": {"icon": "point"}
+		}
+
+		window.map.getSource('location').setData({
+			type: "FeatureCollection",
+			features: [pointJson]
+		});
+
 		logDebug(`Current location: (${latitude}, ${longitude})`);
 		checkNearPoints(latitude, longitude);
 	}

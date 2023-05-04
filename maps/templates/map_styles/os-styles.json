@@ -13,6 +13,13 @@
         "type": "FeatureCollection",
         "features": []
       }
+    },
+    "location": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
     }
   },
   "layers": [
@@ -11300,6 +11307,18 @@
       },
       "paint": {
         "icon-opacity": 1
+      }
+    },
+    {
+      "id": "location",
+      "type": "circle",
+      "source": "location",
+      "paint": {
+        "circle-pitch-alignment": "map",
+        "circle-translate": [0,25],
+        "circle-translate-anchor": "map",
+        "circle-radius": 10,
+        "circle-color": "rgba(255, 0, 0, 1)"
       }
     }
   ]
