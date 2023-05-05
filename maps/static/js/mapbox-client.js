@@ -1,6 +1,4 @@
-
-
-function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickFunction,locationFunction,nearFunction) {
+function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction ) {
 	maxZoom = parseInt(maxZoom);
 
 	if (center && center.coordinates)
@@ -17,7 +15,6 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 	}
 
 
-
 	if (query !== 'None')
 		url += '?' + query + '=' + document.getElementById(query).value;
 
@@ -29,9 +26,9 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 		fetch(url)
 			.then(response => response.json())
 			.then(data => {
-				window.geojson=data;
+				window.geojson = data;
 				window.map.getSource('data').setData(data);
-				if(links==='True') {
+				if (links === 'True') {
 					const lineSource = createLineSource(data.features);
 					window.map.getSource('data').setData(lineSource);
 				}
@@ -44,7 +41,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 	window.map.on('click', 'data', (event) => {
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0) {
-			window.location = `{{ click_url }}`;
+			window.location = click_url;
 		}
 	});
 
@@ -98,13 +95,28 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 		};
 	}
 
-	window.map.moveToPoint = function(point,zoom) {
+	window.map.moveToPoint = function (point, zoom) {
 		window.map.flyTo({center: point.coordinates, zoom: zoom});
 	}
 
-	window.map.zoomToExtent = function() {
+	window.map.zoomToExtent = function () {
 		const bbox = turf.bbox(window.geojson);
 		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+	}
+
+	window.map.setSelected = function (id) {
+		for (let feature in window.geojson.features) {
+			if (window.geojson.features[feature].properties.id === id) {
+				let selected_feature = {
+					type: "FeatureCollection",
+					features: [window.geojson.features[feature]]
+				}
+
+				window.map.getSource('selected').setData(selected_feature);
+			}
+		}
+
+
 	}
 
 	function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -124,21 +136,21 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 
 	function onNearPoint(point) {
 		logDebug('Near point:', point.properties.name);
-		if(typeof nearFunction === 'function') {
+		if (typeof nearFunction === 'function') {
 			nearFunction(point);
 		}
 	}
 
 	function checkNearPoints(latitude, longitude) {
 		const threshold = 100; // Distance threshold in meters
-		if(window.geojson) {
+		if (window.geojson) {
 			window.geojson.features.forEach(point => {
 				const [pointLon, pointLat] = point.geometry.coordinates;
 				const distance = calculateDistance(latitude, longitude, pointLat, pointLon);
 				logDebug(distance)
 				if (distance <= threshold) {
 					onNearPoint(point);
-					let lines=createLineTo(point.geometry.coordinates,[longitude,latitude]);
+					let lines = createLineTo(point.geometry.coordinates, [longitude, latitude]);
 					window.map.getSource('line-source').setData(lines);
 
 					// only one point can be near TODO distance check
@@ -149,13 +161,13 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 	}
 
 	function logDebug(text) {
-		let debugwin=document.getElementById('debug');
-		if(debugwin)
-			debugwin.value+=text+"\n";
+		let debugwin = document.getElementById('debug');
+		if (debugwin)
+			debugwin.value += text + "\n";
 	}
 
 	function onPositionUpdate(position) {
-		const { latitude, longitude } = position.coords;
+		const {latitude, longitude} = position.coords;
 		let pointJson = {
 			"type": "Feature",
 			"geometry": {"coordinates": [longitude, latitude], "type": "Point"},
@@ -166,7 +178,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 			type: "FeatureCollection",
 			features: [pointJson]
 		});
-		if(typeof locationFunction === 'function') {
+		if (typeof locationFunction === 'function') {
 			locationFunction(pointJson);
 		}
 		logDebug(`Current location: (${latitude}, ${longitude})`);
@@ -195,7 +207,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickF
 	function createLineTo(featureFrom, featureTo) {
 
 		// Create a GeoJSON LineString for each connection
-		let line=[{
+		let line = [{
 			type: 'Feature',
 			geometry: {
 				type: 'LineString',
