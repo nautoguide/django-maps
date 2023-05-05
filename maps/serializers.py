@@ -1,6 +1,7 @@
 
 from django.forms.models import model_to_dict
 import json
+from uuid import uuid4
 
 
 def feature_serialize_geojson(queryset, more, properties=["category", "id"]):
@@ -14,6 +15,7 @@ def feature_serialize_geojson(queryset, more, properties=["category", "id"]):
             if prop in combined_data:
                 local_properties[prop] = combined_data[prop]
 
+        local_properties['uuid'] = str(uuid4())
         feature = {'geometry': json.loads(obj.location.geojson), 'properties': local_properties}
 
         serialized_data.append(feature)
