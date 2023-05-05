@@ -15,11 +15,16 @@ def mapbox_simple(**kwargs):
     center = kwargs.get('center', [-0.9307443, 50.7980974])
     json_url = kwargs.get('json_url', None)
     click_url = kwargs.get('click_url', '/Map/${features[0].properties.id}/')
+    clickFunction = kwargs.get('clickFunction', None)
+    locationFunction = kwargs.get('locationFunction', None)
+    nearFunction = kwargs.get('nearFunction', None)
 
     return render_to_string('mapbox_simple_map_insert.html',
                             {'links': links, 'json_url': json_url, 'query': query, 'icons': icons, 'center': center,
                              'maxZoom': maxZoom,
-                             'style': style, 'click_url': click_url, 'location': location})
+                             'style': style, 'click_url': click_url, 'location': location,
+                             'clickFunction': clickFunction, 'locationFunction': locationFunction,
+                             'nearFunction': nearFunction})
 
 
 @register.simple_tag

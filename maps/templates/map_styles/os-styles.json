@@ -20,6 +20,13 @@
         "type": "FeatureCollection",
         "features": []
       }
+    },
+    "line-source": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
     }
   },
   "layers": [
@@ -11267,9 +11274,6 @@
       "type": "circle",
       "source": "data",
       "paint": {
-        "circle-pitch-alignment": "map",
-        "circle-translate": [0,25],
-        "circle-translate-anchor": "map",
         "circle-radius": {
           "base": 1.75,
           "stops": [
@@ -11314,11 +11318,18 @@
       "type": "circle",
       "source": "location",
       "paint": {
-        "circle-pitch-alignment": "map",
-        "circle-translate": [0,25],
-        "circle-translate-anchor": "map",
         "circle-radius": 10,
         "circle-color": "rgba(255, 0, 0, 1)"
+      }
+    },
+    {
+      "id": "lines-between-features",
+      "type": "line",
+      "source": "line-source",
+      "paint": {
+        "line-color": "#F9AA33",
+        "line-width": 5,
+        "line-opacity": 0.2
       }
     }
   ]

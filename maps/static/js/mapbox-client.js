@@ -1,6 +1,6 @@
 
 
-function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
+function mapboxClient(style,center,icons,query,url,maxZoom,location,links,clickFunction,locationFunction,nearFunction) {
 	maxZoom = parseInt(maxZoom);
 
 	if (center && center.coordinates)
@@ -11,7 +11,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 		style: style,
 		maxZoom: maxZoom,
 		minZoom: 0,
-		pitch: 60,
+		pitch: 0,
 		center: center,
 		zoom: 10
 	}
@@ -25,6 +25,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 
 	window.map.on('load', function () {
 		loadIcons(icons);
+		enableLocation();
 		fetch(url)
 			.then(response => response.json())
 			.then(data => {
@@ -32,22 +33,7 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 				window.map.getSource('data').setData(data);
 				if(links==='True') {
 					const lineSource = createLineSource(data.features);
-
-					window.map.addSource('line-source', {
-						type: 'geojson',
-						data: lineSource,
-					});
-
-					window.map.addLayer({
-						id: 'lines-between-features',
-						type: 'line',
-						source: 'line-source',
-						paint: {
-							'line-color': '#F9AA33',
-							'line-width': 5,
-							'line-opacity': 0.2
-						}
-					});
+					window.map.getSource('data').setData(lineSource);
 				}
 				const bbox = turf.bbox(data);
 				window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
@@ -138,6 +124,9 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 
 	function onNearPoint(point) {
 		logDebug('Near point:', point.properties.name);
+		if(typeof nearFunction === 'function') {
+			nearFunction(point);
+		}
 	}
 
 	function checkNearPoints(latitude, longitude) {
@@ -149,6 +138,11 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 				logDebug(distance)
 				if (distance <= threshold) {
 					onNearPoint(point);
+					let lines=createLineTo(point.geometry.coordinates,[longitude,latitude]);
+					window.map.getSource('line-source').setData(lines);
+
+					// only one point can be near TODO distance check
+					return;
 				}
 			});
 		}
@@ -172,26 +166,50 @@ function mapboxClient(style,center,icons,query,url,maxZoom,location,links) {
 			type: "FeatureCollection",
 			features: [pointJson]
 		});
-
+		if(typeof locationFunction === 'function') {
+			locationFunction(pointJson);
+		}
 		logDebug(`Current location: (${latitude}, ${longitude})`);
 		checkNearPoints(latitude, longitude);
 	}
 
 	function onPositionError(error) {
 		logDebug('Error:', error.message);
+
 	}
 
-
-	if(location==='True') {
-		if ('geolocation' in navigator) {
-			navigator.geolocation.watchPosition(onPositionUpdate, onPositionError, {
-				enableHighAccuracy: true,
-				timeout: 5000,
-				maximumAge: 0
-			});
-		} else {
-			logDebug('Geolocation is not supported by your browser.');
+	function enableLocation() {
+		if (location === 'True') {
+			if ('geolocation' in navigator) {
+				navigator.geolocation.watchPosition(onPositionUpdate, onPositionError, {
+					enableHighAccuracy: true,
+					timeout: 5000,
+					maximumAge: 0
+				});
+			} else {
+				logDebug('Geolocation is not supported by your browser.');
+			}
 		}
 	}
+
+	function createLineTo(featureFrom, featureTo) {
+
+		// Create a GeoJSON LineString for each connection
+		let line=[{
+			type: 'Feature',
+			geometry: {
+				type: 'LineString',
+				coordinates: [featureFrom, featureTo],
+			},
+		}];
+
+
+		// Create a GeoJSON FeatureCollection for the line source
+		return {
+			type: 'FeatureCollection',
+			features: line,
+		};
+	}
+
 
 }
