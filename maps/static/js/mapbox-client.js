@@ -147,28 +147,41 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 		return R * c;
 	}
 
-	function onNearPoint(point) {
-		logDebug('Near point:', point.properties.name);
+	function onNearPoint(point,distance) {
+		logDebug(`Near point: ${point.properties.name} - ${distance}`);
 		if (typeof nearFunction === 'function') {
-			nearFunction(point.properties.id);
+			nearFunction(point.properties.id,point,distance);
 		}
 	}
 
 	function checkNearPoints(latitude, longitude) {
 		const threshold = 100; // Distance threshold in meters
 		if (window.geojson) {
+			let candidate_list=[];
 			window.geojson.features.forEach(point => {
 				const [pointLon, pointLat] = point.geometry.coordinates;
 				const distance = calculateDistance(latitude, longitude, pointLat, pointLon);
 				logDebug(distance)
 				if (distance <= threshold) {
-					onNearPoint(point);
-					let lines = createLineTo(point.geometry.coordinates, [longitude, latitude]);
-					window.map.getSource('line-source').setData(lines);
-					// only one point can be near TODO distance check
-					return;
+					candidate_list.push({point:point,distance:distance})
+
 				}
 			});
+			if(candidate_list.length > 0) {
+				let shortest_index=-1;
+				let shortest_distance=threshold;
+				for (let i in candidate_list) {
+					if(candidate_list[i].distance<=shortest_distance) {
+						shortest_distance=candidate_list[i].distance;
+						shortest_index=i;
+					}
+				}
+				onNearPoint(candidate_list[shortest_index].point,candidate_list[shortest_index].distance);
+				let lines = createLineTo(candidate_list[shortest_index].point.geometry.coordinates, [longitude, latitude]);
+				window.map.getSource('line-source').setData(lines);
+				// only one point can be near TODO distance check
+				return;
+			}
 		}
 	}
 
