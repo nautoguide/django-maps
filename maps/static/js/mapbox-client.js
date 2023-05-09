@@ -1,6 +1,15 @@
 function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction ) {
 	maxZoom = parseInt(maxZoom);
 
+
+	if(nearFunction!=='None') {
+		nearFunction=window[nearFunction];
+	}
+	if(clickFunction!=='None') {
+		clickFunction=window[clickFunction];
+	}
+
+
 	if (center && center.coordinates)
 		center = center.coordinates;
 
@@ -41,8 +50,11 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 
 	window.map.on('click', 'data', (event) => {
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
-		if (features.length > 0) {
+		if (features.length > 0 && click_url !== 'None') {
 			window.location = click_url;
+		}
+		if( typeof clickFunction === 'function') {
+			clickFunction(features[0].properties.id);
 		}
 	});
 
@@ -138,7 +150,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	function onNearPoint(point) {
 		logDebug('Near point:', point.properties.name);
 		if (typeof nearFunction === 'function') {
-			nearFunction(point);
+			nearFunction(point.properties.id);
 		}
 	}
 
@@ -153,7 +165,6 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 					onNearPoint(point);
 					let lines = createLineTo(point.geometry.coordinates, [longitude, latitude]);
 					window.map.getSource('line-source').setData(lines);
-
 					// only one point can be near TODO distance check
 					return;
 				}
@@ -165,6 +176,8 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 		let debugwin = document.getElementById('debug');
 		if (debugwin)
 			debugwin.value += text + "\n";
+		else
+			console.log(text)
 	}
 
 	function onPositionUpdate(position) {
