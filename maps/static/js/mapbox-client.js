@@ -19,6 +19,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 		url += '?' + query + '=' + document.getElementById(query).value;
 
 	window.map = new maplibregl.Map(options);
+	window.map.addControl(new maplibregl.NavigationControl());
 
 	window.map.on('load', function () {
 		loadIcons(icons);

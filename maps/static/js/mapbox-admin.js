@@ -30,6 +30,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 	];
 
 	const map = new maplibregl.Map(options);
+	map.addControl(new maplibregl.NavigationControl());
 
 	map.on('load', function () {
 		loadIcons(map, icons);

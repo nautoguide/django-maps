@@ -5,7 +5,8 @@
   "sources": {
     "esri": {
       "type": "vector",
-      "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts.json"
+      "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts.json",
+      "attribution": "Contains OS data © Crown copyright and database right 2023"
     },
     "data": {
       "type": "geojson",
