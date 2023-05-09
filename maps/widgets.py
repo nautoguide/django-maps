@@ -27,6 +27,6 @@ class LocationWidget(Widget):
 
         css = {
             'all': (
-                '/static/css/maplibre-gl.css',
+                '/static/css/maplibre-gl-admin.css',
             )
         }
