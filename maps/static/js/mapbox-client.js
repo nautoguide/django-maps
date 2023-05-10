@@ -1,4 +1,4 @@
-function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction ) {
+function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold ) {
 	maxZoom = parseInt(maxZoom);
 
 
@@ -155,7 +155,6 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	}
 
 	function checkNearPoints(latitude, longitude) {
-		const threshold = 100; // Distance threshold in meters
 		if (window.geojson) {
 			let candidate_list=[];
 			window.geojson.features.forEach(point => {
