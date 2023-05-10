@@ -32,6 +32,13 @@ def mapbox_simple(**kwargs):
 @register.simple_tag
 def mapbox_cluster(**kwargs):
     center = kwargs.get('center', [-0.9307443, 50.7980974])
+    style = kwargs.get('style', '/mapfiles/?file=cartodb-xyz.json')
     icons = kwargs.get('icons', [])
     json_url = kwargs.get('json_url', None)
-    return render_to_string('mapbox_insert_cluster.html', {'json_url': json_url, 'icons': icons, 'center': center})
+    maxZoom = kwargs.get('maxZoom', 15)
+
+    return render_to_string('mapbox_insert_cluster.html', {'links': False, 'json_url': json_url, 'query': None, 'icons': icons, 'center': center,
+                                                           'maxZoom': maxZoom,
+                                                           'style': style, 'click_url': None, 'location': False,
+                                                           'clickFunction': None, 'locationFunction': None,
+                                                           'nearFunction': None, 'threshold': 0, 'cluster': True})
