@@ -40,7 +40,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 				window.map.getSource('data').setData(data);
 				if (links === 'True') {
 					const lineSource = createLineSource(data.features);
-					window.map.getSource('data').setData(lineSource);
+					window.map.getSource('line-source').setData(lineSource);
 				}
 				const bbox = turf.bbox(data);
 				window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})

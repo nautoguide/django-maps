@@ -15,6 +15,27 @@
         "type": "FeatureCollection",
         "features": []
       }
+    },
+    "location": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
+    "line-source": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
+    "selected": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
     }
   },
   "layers": [
@@ -26,23 +47,83 @@
       "maxzoom": 22
     },
     {
+      "id": "data-circles",
+      "type": "circle",
+      "source": "data",
+      "paint": {
+        "circle-radius": {
+          "base": 1.75,
+          "stops": [
+            [12, 2],
+            [22, 180]
+          ]
+        },
+        "circle-color": [
+          "case",
+          ["has", "color"],
+          ["match",
+            ["get", "color"],
+            1,
+            "rgba(0, 255, 0, 0.5)",
+            2,
+            "rgba(255, 0, 0, 0.5)",
+            3,
+            "rgba(0, 0, 255, 0.5)",
+            "rgba(0, 0, 0, 0)"
+          ],
+          "rgba(0, 0, 0, 0)"
+        ]
+      }
+    },
+    {
+      "id": "location",
+      "type": "symbol",
+      "source": "location",
+      "layout": {
+        "icon-image": "point",
+        "icon-size": 1,
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom",
+        "icon-offset": [0, 0]
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "lines-between-features",
+      "type": "line",
+      "source": "line-source",
+      "paint": {
+        "line-color": "#F9AA33",
+        "line-width": 5,
+        "line-opacity": 0.2
+      }
+    },
+    {
       "id": "data",
       "type": "symbol",
       "source": "data",
       "layout": {
-        "icon-image": [
-          "match",
-          ["get", "category"],
-          "ship", "ship",
-          "homeport", "homeport",
-          "memorial", "memorial",
-          "school", "school",
-          "submarine", "submarine",
-          "sailor"
-        ],
+        "icon-image": "{category}",
         "icon-size": 1,
         "icon-allow-overlap": true,
         "icon-anchor": "bottom"
+      },
+      "paint": {
+        "icon-opacity": 1
+      }
+    },
+    {
+      "id": "selected",
+      "type": "symbol",
+      "source": "selected",
+      "layout": {
+        "icon-image": "selected",
+        "icon-size": 1,
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom",
+        "icon-offset": [0, 0]
       },
       "paint": {
         "icon-opacity": 1
