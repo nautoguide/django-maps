@@ -11307,21 +11307,6 @@
       }
     },
     {
-      "id": "data",
-      "type": "symbol",
-      "source": "data",
-      "layout": {
-        "icon-image": "{icon}",
-        "icon-size": 1,
-        "icon-allow-overlap": true,
-        "icon-anchor": "bottom",
-        "icon-offset": [0, 0]
-      },
-      "paint": {
-        "icon-opacity": 1
-      }
-    },
-    {
       "id": "location",
       "type": "symbol",
       "source": "location",
@@ -11344,6 +11329,21 @@
         "line-color": "#F9AA33",
         "line-width": 5,
         "line-opacity": 0.2
+      }
+    },
+    {
+      "id": "data",
+      "type": "symbol",
+      "source": "data",
+      "layout": {
+        "icon-image": "{icon}",
+        "icon-size": 1,
+        "icon-allow-overlap": true,
+        "icon-anchor": "bottom",
+        "icon-offset": [0, 0]
+      },
+      "paint": {
+        "icon-opacity": 1
       }
     },
     {
