@@ -6,7 +6,7 @@ register = template.Library()
 
 @register.simple_tag
 def mapbox_simple(**kwargs):
-    style = kwargs.get('style', 'mapfiles/?file=cartodb-xyz.json')
+    style = kwargs.get('style', '/mapfiles/?file=cartodb-xyz.json')
     links = kwargs.get('links', False)
     location = kwargs.get('location', False)
     maxZoom = kwargs.get('maxZoom', 15)
