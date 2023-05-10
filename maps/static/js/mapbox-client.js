@@ -1,6 +1,13 @@
-function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold ) {
+function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster ) {
 	maxZoom = parseInt(maxZoom);
 
+	const clusterIndex = new Supercluster({
+		radius: 50,
+		maxZoom: 12
+	});
+
+	window.geojson={"type":"FeatureCollection","features":[]};
+	clusterIndex.load(window.geojson.features);
 
 	if(nearFunction!=='None') {
 		nearFunction=window[nearFunction];
@@ -8,6 +15,8 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	if(clickFunction!=='None') {
 		clickFunction=window[clickFunction];
 	}
+
+	let page=1;
 
 
 	if (center && center.coordinates)
@@ -33,19 +42,131 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	window.map.on('load', function () {
 		loadIcons(icons);
 		enableLocation();
-		fetch(url)
-			.then(response => response.json())
-			.then(data => {
-				window.geojson = data;
-				window.map.getSource('data').setData(data);
-				if (links === 'True') {
-					const lineSource = createLineSource(data.features);
-					window.map.getSource('line-source').setData(lineSource);
+
+		if(cluster==='True') {
+			map.addSource('clusters', {
+				type: 'geojson',
+				data: getClusters()
+			});
+
+			map.addLayer({
+				id: 'clusters-outer',
+				type: 'circle',
+				source: 'clusters',
+				paint: {
+					'circle-radius': [
+						'step',
+						['get', 'point_count'],
+						7, 10, // Radius for clusters with 10 or less points
+						12, 50, // Radius for clusters with 50 or less points
+						17, 100, // Radius for clusters with 100 or less points
+						22, 300, // Radius for clusters with 300 or less points
+						28, 750, // Radius for clusters with 750 or less points
+						28, // Radius for clusters with more than 750 points
+					],
+					'circle-color': '#062b33',
+					'circle-opacity': 0.5
 				}
-				const bbox = turf.bbox(data);
-				window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
-			})
-			.catch(error => console.error(error));
+			});
+
+			map.addLayer({
+				id: 'clusters',
+				type: 'circle',
+				source: 'clusters',
+				paint: {
+					'circle-radius': [
+						'step',
+						['get', 'point_count'],
+						5, 10, // Radius for clusters with 10 or less points
+						10, 50, // Radius for clusters with 50 or less points
+						15, 100, // Radius for clusters with 100 or less points
+						20, 300, // Radius for clusters with 300 or less points
+						25, 750, // Radius for clusters with 750 or less points
+						25, // Radius for clusters with more than 750 points
+					],
+					'circle-color': [
+						'step',
+						['get', 'point_count'],
+						'#72cde7', 10, // Color for clusters with 10 or less points
+						'#3e90a6', 50, // Color for clusters with 50 or less points
+						'#347e98', 100, // Color for clusters with 100 or less points
+						'#286679', 300, // Color for clusters with 300 or less points
+						'#135262', 750, // Color for clusters with 750 or less points
+						'#03485b', // Color for clusters with more than 750 points
+					],
+					'circle-opacity': 0.8
+				}
+			});
+
+
+
+			map.addLayer({
+
+				id: 'cluster-labels',
+				type: 'symbol',
+				source: 'clusters',
+				filter: ['has', 'point_count'],
+				'layout': {
+					"text-font": ["Open Sans Regular"],
+					'text-field': ['get', 'point_count'],
+					'text-variable-anchor': ['center', 'bottom', 'left', 'right'],
+					'text-radial-offset': 0.5,
+					'text-justify': 'auto',
+					'text-size': 12
+				},
+				paint: {
+					'text-color': '#ffffff'
+				}
+			});
+
+
+			map.addLayer({
+				id: 'unclustered-points',
+				type: 'symbol',
+				source: 'clusters',
+				filter: ['!=', 'cluster', true],
+				layout: {
+					'icon-image': [
+						'match',
+						['get', 'category'], // Get the 'category' property from the feature
+						'ship', 'ship',
+						'homeport', 'homeport',
+						'memorial', 'memorial',
+						'school', 'school',
+						'submarine', 'submarine',
+						'sailor'
+					],
+					'icon-size': 1, // Set the icon size
+					'icon-allow-overlap': true,
+					'icon-anchor': 'bottom'
+				},
+				paint: {
+					'icon-opacity': 1 // Set the opacity of the icons
+				}
+			});
+
+			map.on('moveend', () => {
+				map.getSource('clusters').setData(getClusters());
+			});
+
+			clusterLoader();
+
+		} else {
+
+			fetch(url)
+				.then(response => response.json())
+				.then(data => {
+					window.geojson = data;
+					window.map.getSource('data').setData(data);
+					if (links === 'True') {
+						const lineSource = createLineSource(data.features);
+						window.map.getSource('line-source').setData(lineSource);
+					}
+					const bbox = turf.bbox(data);
+					window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+				})
+				.catch(error => console.error(error));
+		}
 	});
 
 	window.map.on('click', 'data', (event) => {
@@ -248,6 +369,37 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 			features: line,
 		};
 	}
+
+	function getClusters() {
+		const bbox = map.getBounds().toArray().flat();
+		const zoom = map.getZoom();
+		return {type:"FeatureCollection","features":clusterIndex.getClusters(bbox, Math.round(zoom))};
+	}
+
+
+	function clusterLoader() {
+		fetch(`${url}?p=${page}&ps=500`)
+			.then(response => response.json())
+			.then(data => {
+
+				window.geojson.features=[...window.geojson.features,...data.features];
+				//console.log(data);
+				clusterIndex.load(window.geojson.features);
+				map.getSource('clusters').setData(getClusters());
+				if(data.more===false) {
+					let element = document.getElementById("map_spin");
+					element.classList.add("hidden")
+					//const bbox = turf.bbox(globalGeojson);
+					//map.fitBounds(bbox, {padding: 200})
+				} else {
+					page++;
+					map.triggerRepaint();
+					setTimeout(clusterLoader,100);
+				}
+
+			}).catch(error => console.error(error));
+	}
+
 
 
 }
