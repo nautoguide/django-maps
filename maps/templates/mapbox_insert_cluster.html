@@ -18,20 +18,6 @@
 		}
 	});
 
-	map.on('click', 'clusters', (e) => {
-		const clusterCoordinates = e.features[0].geometry.coordinates;
-
-		// Set the new zoom level, making sure it doesn't exceed the maximum allowed zoom level
-		const newZoom = Math.min(map.getZoom() + 2, map.getMaxZoom());
-
-		// Center the map on the clicked cluster and zoom in
-		map.easeTo({
-			center: clusterCoordinates,
-			zoom: newZoom,
-			duration: 1000 // Animate the transition for 1000 ms
-		});
-
-	});
 
 	map.on('mouseenter', 'clusters', () => {
 		map.getCanvas().style.cursor = 'pointer';

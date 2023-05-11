@@ -36,9 +36,10 @@ def mapbox_cluster(**kwargs):
     icons = kwargs.get('icons', [])
     json_url = kwargs.get('json_url', None)
     maxZoom = kwargs.get('maxZoom', 15)
+    click_url = kwargs.get('click_url', None)
 
     return render_to_string('mapbox_insert_cluster.html', {'links': False, 'json_url': json_url, 'query': None, 'icons': icons, 'center': center,
                                                            'maxZoom': maxZoom,
-                                                           'style': style, 'click_url': None, 'location': False,
+                                                           'style': style, 'click_url': click_url, 'location': False,
                                                            'clickFunction': None, 'locationFunction': None,
                                                            'nearFunction': None, 'threshold': 0, 'cluster': True})

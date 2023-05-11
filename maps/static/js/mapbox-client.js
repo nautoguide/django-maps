@@ -172,11 +172,38 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	window.map.on('click', 'data', (event) => {
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0 && click_url !== 'None') {
+			click_url=click_url.replace('${id}',features[0].properties.id)
 			window.location = click_url;
 		}
 		if( typeof clickFunction === 'function') {
 			clickFunction(features[0].properties.id);
 		}
+	});
+
+	map.on('click', 'unclustered-points', (event) => {
+		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
+		if (features.length > 0 && click_url !== 'None') {
+			click_url=click_url.replace('${id}',features[0].properties.id)
+			window.location = click_url;
+		}
+		if( typeof clickFunction === 'function') {
+			clickFunction(features[0].properties.id);
+		}
+	});
+
+	window.map.on('click', 'clusters', (e) => {
+		const clusterCoordinates = e.features[0].geometry.coordinates;
+
+		// Set the new zoom level, making sure it doesn't exceed the maximum allowed zoom level
+		const newZoom = Math.min(window.map.getZoom() + 2, window.map.getMaxZoom());
+
+		// Center the map on the clicked cluster and zoom in
+		window.map.easeTo({
+			center: clusterCoordinates,
+			zoom: newZoom,
+			duration: 1000 // Animate the transition for 1000 ms
+		});
+
 	});
 
 	function reload_map_data() {
