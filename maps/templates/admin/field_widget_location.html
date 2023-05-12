@@ -1,6 +1,8 @@
 {% load i18n %}
 
-<div id="{{ widget.attrs.id }}-map" style="display: block; width: 100%; height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}" data-center="{{ map_center|safe }}"></div>
+
+
+<div id="{{ widget.attrs.id }}-map" style="display: block; width: 100%; height: 300px;" class="init-widget" data-value="{{ widget.value|default_if_none:"POINT(0 0)" }}" data-center="{{ widget.attrs.map_center|safe }}"></div>
 
 <input style="display:none" type="text"
        name="{{ widget.name }}"

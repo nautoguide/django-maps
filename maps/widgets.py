@@ -1,23 +1,25 @@
 from django.forms.widgets import Widget
-from django.template.loader import render_to_string
 
 class LocationWidget(Widget):
     template_name = 'admin/field_widget_location.html'
 
-    def __init__(self, attrs=None, map_center=None, **kwargs):
-        #self.map_center = map_center
-        if attrs is None:
-            attrs = {}
-        if map_center is not None:
-            attrs.update({'data-center': map_center})
-        super().__init__(attrs=attrs, **kwargs)
+    map_center = [-0.9307443, 50.7980974]
 
-    def render(self, name, value, attrs=None, renderer=None):
-        context = self.get_context(name, value, attrs)
-        print("here")
-        print( attrs.get('map_center'))
-        context['map_center'] = attrs.get('map_center')
-        return render_to_string(self.template_name, context)
+    def __init__(self, attrs=None):
+        self.attrs = {}
+        for key in ("map_center", ):
+            if attrs and key in attrs:
+                self.attrs[key] = attrs[key]
+            else:
+                self.attrs[key] = getattr(self, key)
+        if attrs:
+            self.attrs.update(attrs)
+
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        return context
+
 
     class Media:
         js = (

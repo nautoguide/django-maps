@@ -13,15 +13,18 @@ function mapboxAdminFromElement(element) {
 }
 
 function mapboxAdmin(widgetId, widgetValue) {
-	//debugger;
+
+	let map_element=document.getElementById(widgetId)
+	let center=JSON.parse(map_element.dataset.center);
+	//let center=map_element.dataset.center;
+
 	let options = {
-		container: `${widgetId}`,
+		container: widgetId,
 		style: '/mapfiles/?file=os-styles.json',
 		maxZoom: 25,
 		minZoom: 0,
 		pitch: 0,
-		//center: [-0.9307443, 50.7980974],
-		center: [-3.510486, 50.395822] ,
+		center: center ,
 		zoom: 10
 	}
 
