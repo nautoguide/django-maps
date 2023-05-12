@@ -42,6 +42,36 @@ Add 'maps' to your INSTALLED_APPS apps
     ]
 ```
 
+## Adding a map location to your model
+
+in models.py
+
+```
+from maps.fields import Location
+
+
+class Feature(models.Model):
+    title = models.CharField(null=True, max_length=200, help_text="Title of feature")
+    location = Location()
+
+```
+
+This will use a default map, if you want to provide settings to the admin map then in admin.py
+
+```
+defs = {
+    'attrs': {
+        'map_center': [-4.142467699252791,50.369191887081485]
+    }
+}
+
+class MyModelAdmin(admin.ModelAdmin):
+    .....
+    formfield_overrides = {
+        Location: {"widget": LocationWidget(attrs=defs['attrs'])},
+    }
+```
+
 ## Using maps in your templates
 
 To any template where you need a map add:
