@@ -7,27 +7,3 @@
 <script>
     mapboxClient('{{style}}',{{ center|safe }},{{ icons|safe }} ,'{{ query }}', '{{ json_url }}','{{ maxZoom }}', '{{location}}','{{ links }}','{{ click_url }}','{{clickFunction}}', '{{locationFunction}}', '{{nearFunction}}','{{threshold}}','{{cluster}}');
 </script>
-<!--?
-
-
-	map.on('click', 'unclustered-points', (event) => {
-		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
-		if (features.length > 0) {
-			console.log(features[0].properties.id);
-			window.location = `/Map/${features[0].properties.id}/`;
-		}
-	});
-
-
-	map.on('mouseenter', 'clusters', () => {
-		map.getCanvas().style.cursor = 'pointer';
-	});
-
-	map.on('mouseleave', 'clusters', () => {
-		map.getCanvas().style.cursor = '';
-	});
-
-
-
-
-</script>-->
