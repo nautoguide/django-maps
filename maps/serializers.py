@@ -16,7 +16,9 @@ def feature_serialize_geojson(queryset, more, properties=["category", "id"]):
                 local_properties[prop] = combined_data[prop]
 
         local_properties['uuid'] = str(uuid4())
-        feature = {'geometry': json.loads(obj.location.geojson), 'properties': local_properties}
+        # Filter out any defaulted / not set locations
+        if obj.location != 'POINT (0 0)':
+            feature = {'geometry': json.loads(obj.location.geojson), 'properties': local_properties}
 
         serialized_data.append(feature)
 
