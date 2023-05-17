@@ -20,13 +20,14 @@ def mapbox_simple(**kwargs):
     locationFunction = kwargs.get('locationFunction', None)
     nearFunction = kwargs.get('nearFunction', None)
     threshold = kwargs.get('threshold', 100)
+    controls = kwargs.get('controls', True)
 
     return render_to_string('mapbox_simple_map_insert.html',
                             {'links': links, 'json_url': json_url, 'query': query, 'icons': icons, 'center': center,
                              'maxZoom': maxZoom,
                              'style': style, 'click_url': click_url, 'location': location,
                              'clickFunction': clickFunction, 'locationFunction': locationFunction,
-                             'nearFunction': nearFunction,'threshold': threshold})
+                             'nearFunction': nearFunction, 'threshold': threshold, 'controls': controls})
 
 
 @register.simple_tag
