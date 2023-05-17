@@ -1,4 +1,4 @@
-function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster ) {
+function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls ) {
 	maxZoom = parseInt(maxZoom);
 
 	const clusterIndex = new Supercluster({
@@ -37,7 +37,9 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 		url += '?' + query + '=' + document.getElementById(query).value;
 
 	window.map = new maplibregl.Map(options);
-	window.map.addControl(new maplibregl.NavigationControl());
+	if(controls==='True') {
+		window.map.addControl(new maplibregl.NavigationControl());
+	}
 
 	window.map.on('load', function () {
 		loadIcons(icons);
