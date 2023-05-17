@@ -154,20 +154,21 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 			clusterLoader();
 
 		} else {
-
-			fetch(url)
-				.then(response => response.json())
-				.then(data => {
-					window.geojson = data;
-					window.map.getSource('data').setData(data);
-					if (links === 'True') {
-						const lineSource = createLineSource(data.features);
-						window.map.getSource('line-source').setData(lineSource);
-					}
-					const bbox = turf.bbox(data);
-					window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
-				})
-				.catch(error => console.error(error));
+			if(url!=='None') {
+				fetch(url)
+					.then(response => response.json())
+					.then(data => {
+						window.geojson = data;
+						window.map.getSource('data').setData(data);
+						if (links === 'True') {
+							const lineSource = createLineSource(data.features);
+							window.map.getSource('line-source').setData(lineSource);
+						}
+						const bbox = turf.bbox(data);
+						window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+					})
+					.catch(error => console.error(error));
+			}
 		}
 	});
 
@@ -258,29 +259,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 		};
 	}
 
-	window.map.moveToPoint = function (point, zoom) {
-		window.map.flyTo({center: point.coordinates, zoom: zoom});
-	}
 
-	window.map.zoomToExtent = function () {
-		const bbox = turf.bbox(window.geojson);
-		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
-	}
-
-	window.map.setSelected = function (id) {
-		for (let feature in window.geojson.features) {
-			if (window.geojson.features[feature].properties.id === id) {
-				let selected_feature = {
-					type: "FeatureCollection",
-					features: [window.geojson.features[feature]]
-				}
-
-				window.map.getSource('selected').setData(selected_feature);
-			}
-		}
-
-
-	}
 
 	function calculateDistance(lat1, lon1, lat2, lon2) {
 		const R = 6371e3; // Earth radius in meters
@@ -429,6 +408,38 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 			}).catch(error => console.error(error));
 	}
 
+	// External functions
 
+	window.map.moveToPoint = function (point, zoom) {
+		window.map.flyTo({center: point.coordinates, zoom: zoom});
+	}
+
+	window.map.zoomToExtent = function () {
+		const bbox = turf.bbox(window.geojson);
+		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+	}
+
+	window.map.setSelected = function (id,zoom) {
+		for (let feature in window.geojson.features) {
+			if (window.geojson.features[feature].properties.id === id) {
+				let selected_feature = {
+					type: "FeatureCollection",
+					features: [window.geojson.features[feature]]
+				}
+
+				window.map.getSource('selected').setData(selected_feature);
+				if(zoom) {
+					window.map.jumpTo({center: window.geojson.features[feature].geometry.coordinates, zoom: zoom});
+				}
+			}
+		}
+	}
+
+	window.map.addGeojson = function (geojson) {
+		window.geojson = geojson;
+		window.map.getSource('data').setData(geojson);
+		const bbox = turf.bbox(geojson);
+		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+	}
 
 }
