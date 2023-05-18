@@ -391,7 +391,7 @@ function mapboxClient( params ) {
 
 
 	function clusterLoader() {
-		fetch(`${url}?p=${page}&ps=500`)
+		fetch(`${params.json_url}?p=${page}&ps=500`)
 			.then(response => response.json())
 			.then(data => {
 
