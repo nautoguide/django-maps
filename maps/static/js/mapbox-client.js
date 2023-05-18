@@ -1,5 +1,7 @@
-function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls ) {
-	maxZoom = parseInt(maxZoom);
+//function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls,geojson ) {
+function mapboxClient( params ) {
+
+	params.maxZoom = parseInt(params.maxZoom);
 
 	const clusterIndex = new Supercluster({
 		radius: 50,
@@ -9,43 +11,43 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	window.geojson={"type":"FeatureCollection","features":[]};
 	clusterIndex.load(window.geojson.features);
 
-	if(nearFunction!=='None') {
-		nearFunction=window[nearFunction];
+	if(params.nearFunction!=='None') {
+		params.nearFunction=window[params.nearFunction];
 	}
-	if(clickFunction!=='None') {
-		clickFunction=window[clickFunction];
+	if(params.clickFunction!=='None') {
+		params.clickFunction=window[params.clickFunction];
 	}
 
 	let page=1;
 
+	params.center=JSON.parse(params.center);
 
-	if (center && center.coordinates)
-		center = center.coordinates;
+	if (params.center && params.center.coordinates)
+		params.center = params.center.coordinates;
 
 	let options = {
 		container: 'map',
-		style: style,
-		maxZoom: maxZoom,
+		style: params.style,
+		maxZoom: params.maxZoom,
 		minZoom: 0,
 		pitch: 0,
-		center: center,
+		center: params.center,
 		zoom: 10
 	}
 
-
-	if (query !== 'None')
-		url += '?' + query + '=' + document.getElementById(query).value;
+	if (params.query !== 'None')
+		params.json_url += '?' + params.query + '=' + document.getElementById(params.query).value;
 
 	window.map = new maplibregl.Map(options);
-	if(controls==='True') {
+	if(params.controls==='True') {
 		window.map.addControl(new maplibregl.NavigationControl());
 	}
 
 	window.map.on('load', function () {
-		loadIcons(icons);
+		loadIcons(params.icons);
 		enableLocation();
 
-		if(cluster==='True') {
+		if(params.cluster==='True') {
 			map.addSource('clusters', {
 				type: 'geojson',
 				data: getClusters()
@@ -154,13 +156,13 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 			clusterLoader();
 
 		} else {
-			if(url!=='None') {
-				fetch(url)
+			if(params.json_url!=='None') {
+				fetch(params.json_url)
 					.then(response => response.json())
 					.then(data => {
 						window.geojson = data;
 						window.map.getSource('data').setData(data);
-						if (links === 'True') {
+						if (params.links === 'True') {
 							const lineSource = createLineSource(data.features);
 							window.map.getSource('line-source').setData(lineSource);
 						}
@@ -169,28 +171,32 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 					})
 					.catch(error => console.error(error));
 			}
+			if(params.geojson&&params.geojson.type) {
+				window.geojson = params.geojson;
+				window.map.getSource('data').setData(params.geojson);
+			}
 		}
 	});
 
 	window.map.on('click', 'data', (event) => {
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
-		if (features.length > 0 && click_url !== 'None') {
-			click_url=click_url.replace('${id}',features[0].properties.id)
-			window.location = click_url;
+		if (features.length > 0 && params.click_url !== 'None') {
+			params.click_url=params.click_url.replace('${id}',features[0].properties.id)
+			window.location = params.click_url;
 		}
-		if( typeof clickFunction === 'function') {
-			clickFunction(features[0].properties.id);
+		if( typeof params.clickFunction === 'function') {
+			params.clickFunction(features[0].properties.id);
 		}
 	});
 
 	map.on('click', 'unclustered-points', (event) => {
 		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
 		if (features.length > 0 && click_url !== 'None') {
-			click_url=click_url.replace('${id}',features[0].properties.id)
-			window.location = click_url;
+			params.click_url=params.click_url.replace('${id}',features[0].properties.id)
+			window.location = params.click_url;
 		}
-		if( typeof clickFunction === 'function') {
-			clickFunction(features[0].properties.id);
+		if( typeof params.clickFunction === 'function') {
+			params.clickFunction(features[0].properties.id);
 		}
 	});
 
@@ -210,7 +216,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	});
 
 	function reload_map_data() {
-		fetch(`${url}?q=${document.getElementById('q').value}`)
+		fetch(`${params.json_url}?q=${document.getElementById('q').value}`)
 			.then(response => response.json())
 			.then(data => {
 				// Process the retrieved data here
@@ -278,8 +284,8 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 
 	function onNearPoint(point,distance) {
 		logDebug(`Near point: ${point.properties.name} - ${distance}`);
-		if (typeof nearFunction === 'function') {
-			nearFunction(point.properties.id,point,distance);
+		if (typeof params.nearFunction === 'function') {
+			params.nearFunction(point.properties.id,point,distance);
 		}
 	}
 
@@ -290,14 +296,14 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 				const [pointLon, pointLat] = point.geometry.coordinates;
 				const distance = calculateDistance(latitude, longitude, pointLat, pointLon);
 				logDebug(distance)
-				if (distance <= threshold) {
+				if (distance <= params.threshold) {
 					candidate_list.push({point:point,distance:distance})
 
 				}
 			});
 			if(candidate_list.length > 0) {
 				let shortest_index=-1;
-				let shortest_distance=threshold;
+				let shortest_distance=params.threshold;
 				for (let i in candidate_list) {
 					if(candidate_list[i].distance<=shortest_distance) {
 						shortest_distance=candidate_list[i].distance;
@@ -307,7 +313,6 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 				onNearPoint(candidate_list[shortest_index].point,candidate_list[shortest_index].distance);
 				let lines = createLineTo(candidate_list[shortest_index].point.geometry.coordinates, [longitude, latitude]);
 				window.map.getSource('line-source').setData(lines);
-				// only one point can be near TODO distance check
 				return;
 			}
 		}
@@ -333,8 +338,8 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 			type: "FeatureCollection",
 			features: [pointJson]
 		});
-		if (typeof locationFunction === 'function') {
-			locationFunction(pointJson);
+		if (typeof params.locationFunction === 'function') {
+			params.locationFunction(pointJson);
 		}
 		logDebug(`Current location: (${latitude}, ${longitude})`);
 		checkNearPoints(latitude, longitude);
@@ -346,7 +351,7 @@ function mapboxClient(style, center, icons, query, url, maxZoom, location, links
 	}
 
 	function enableLocation() {
-		if (location === 'True') {
+		if (params.location === 'True') {
 			if ('geolocation' in navigator) {
 				navigator.geolocation.watchPosition(onPositionUpdate, onPositionError, {
 					enableHighAccuracy: true,
