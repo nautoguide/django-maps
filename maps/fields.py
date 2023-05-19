@@ -1,9 +1,9 @@
-from django.db import models
+from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from .forms import LocationFormField
 
 
-class Location(models.Field):
+class Location(models.PointField):
     description = "A custom field to store a GEOMETRY type and return GeoJSON"
 
     def __init__(self, *args,  **kwargs):
