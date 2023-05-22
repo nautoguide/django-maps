@@ -33,6 +33,10 @@ function mapboxAdmin(widgetId, widgetValue) {
 	];
 
 	const map = new maplibregl.Map(options);
+	if (window.map === undefined)
+		window.map={};
+	window.map[widgetId]=map;
+
 	map.addControl(new maplibregl.NavigationControl());
 
 	map.on('load', function () {
@@ -89,5 +93,13 @@ function mapboxAdmin(widgetId, widgetValue) {
 				}
 			});
 		});
+	}
+
+	window.map[widgetId].addGeojson = function (geojson) {
+		window.geojson = geojson;
+		window.map[widgetId].getSource('data').setData(geojson);
+		window.map[widgetId].flyTo({center: geojson.features[0].geometry.coordinates});
+		let field = document.getElementById(widgetId.replace(/-map/,''));
+		field.value = `POINT(${geojson.features[0].geometry.coordinates[0]} ${geojson.features[0].geometry.coordinates[1]})`;
 	}
 }
