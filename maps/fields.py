@@ -1,15 +1,16 @@
-from django.contrib.gis.db import models
-from django.contrib.gis.geos import GEOSGeometry
 from .forms import LocationFormField
+from django.contrib.gis.db.models import Field
+from django.contrib.gis.geos import (
 
+    GEOSGeometry,
+    Point,
+)
 
-class Location(models.PointField):
+class Location(Field):
     description = "A custom field to store a GEOMETRY type and return GeoJSON"
 
-    def __init__(self, *args,  **kwargs):
-        # Add any custom initialization code here
-        super().__init__(*args, **kwargs)
-
+    geom_type = "POINT"
+    geom_class = Point
     def db_type(self, connection):
         return 'GEOMETRY'
 
