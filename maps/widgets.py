@@ -5,13 +5,14 @@ class LocationWidget(Widget):
 
     defaults = {
         "map_center": [-0.9307443, 50.7980974],
-        "id": "location"  # adjust this as necessary
-
+        "id": "location",  # adjust this as necessary
+        "zoom": 10,
+        "clickFunction": ""
     }
 
     def __init__(self, attrs=None):
         self.attrs = {}
-        for key in ("map_center", "id"):
+        for key in ("map_center", "id", "zoom", "clickFunction"):
             if attrs and key in attrs:
                 self.attrs[key] = attrs[key]
             else:

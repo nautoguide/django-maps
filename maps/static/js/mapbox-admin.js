@@ -16,8 +16,12 @@ function mapboxAdmin(widgetId, widgetValue) {
 
 	let map_element=document.getElementById(widgetId)
 	let center=JSON.parse(map_element.dataset.center);
-	//let center=map_element.dataset.center;
+	let zoom=map_element.dataset.zoom;
+	let clickFunction=map_element.dataset.clickfunction;
+	if(clickFunction!==undefined)
+		clickFunction=window[clickFunction];
 
+	//let center=map_element.dataset.center;
 	let options = {
 		container: widgetId,
 		style: '/mapfiles/?file=os-styles.json',
@@ -25,7 +29,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 		minZoom: 0,
 		pitch: 0,
 		center: center ,
-		zoom: 10
+		zoom: zoom
 	}
 
 	const icons = [
@@ -77,6 +81,10 @@ function mapboxAdmin(widgetId, widgetValue) {
 		});
 		let field = document.getElementById(widgetId.replace(/-map/,''));
 		field.value = `POINT(${event.lngLat.lng} ${event.lngLat.lat})`;
+
+		if( typeof clickFunction === 'function') {
+			clickFunction([event.lngLat.lng, event.lngLat.lat]);
+		}
 	});
 
 	function loadIcons(map, icons) {
