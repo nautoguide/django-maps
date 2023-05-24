@@ -23,6 +23,7 @@ def mapbox_simple(**kwargs):
     controls = kwargs.get('controls', True)
     geojson = kwargs.get('geojson', {})
     cssClass = kwargs.get('cssClass', "map")
+    allClick = kwargs.get('allClick', False)
 
     return render_to_string('mapbox_simple_map_insert.html', {'params':
                                                                   {'links': str(links), 'json_url': str(json_url), 'query': str(query),
@@ -30,6 +31,7 @@ def mapbox_simple(**kwargs):
                                                                    'maxZoom': maxZoom, 'cssClass': str(cssClass),
                                                                    'style': style, 'click_url': str(click_url),
                                                                    'location': str(location),
+                                                                   'allClick': str(allClick),
                                                                    'clickFunction': str(clickFunction),
                                                                    'locationFunction': str(locationFunction),
                                                                    'nearFunction': str(nearFunction), 'threshold': threshold,
