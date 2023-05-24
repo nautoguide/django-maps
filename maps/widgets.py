@@ -22,7 +22,6 @@ class LocationWidget(Widget):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        print(context)
         return context
 
 

@@ -178,6 +178,24 @@ function mapboxClient( params ) {
 		}
 	});
 
+
+	window.map.on('click', (event) => {
+		console.log('Map clicked at:', event.lngLat);
+		if(params.allClick === 'True') {
+			map.getSource('data').setData({
+				type: "FeatureCollection",
+				features: [{
+					"type": "Feature",
+					"geometry": {"coordinates": [event.lngLat.lng, event.lngLat.lat], "type": "Point"},
+					"properties": {"icon": "point"}
+				}]
+			});
+			if (typeof params.clickFunction === 'function') {
+				params.clickFunction([event.lngLat.lng, event.lngLat.lat]);
+			}
+		}
+	});
+
 	window.map.on('click', 'data', (event) => {
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0 && params.click_url !== 'None') {
