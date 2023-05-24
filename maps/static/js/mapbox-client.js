@@ -442,6 +442,9 @@ function mapboxClient( params ) {
 		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
 	}
 
+	window.map.clearSelected = function (id,zoom) {
+		window.map.getSource('selected').setData({"type":"FeatureCollection","features":[]});
+	}
 	window.map.setSelected = function (id,zoom) {
 		for (let feature in window.geojson.features) {
 			if (window.geojson.features[feature].properties.id === id) {
