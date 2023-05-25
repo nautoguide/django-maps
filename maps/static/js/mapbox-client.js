@@ -2,6 +2,7 @@
 function mapboxClient( params ) {
 
 	params.maxZoom = parseInt(params.maxZoom);
+	params.zoom = parseInt(params.zoom);
 
 	const clusterIndex = new Supercluster({
 		radius: 50,
@@ -32,7 +33,7 @@ function mapboxClient( params ) {
 		minZoom: 0,
 		pitch: 0,
 		center: params.center,
-		zoom: 10
+		zoom: params.zoom
 	}
 
 	if (params.query !== 'None')
