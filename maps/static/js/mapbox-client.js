@@ -1,8 +1,12 @@
 //function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls,geojson ) {
 function mapboxClient( params ) {
 
+	let queue = false;
+	let loaded = false;
+
 	params.maxZoom = parseInt(params.maxZoom);
 	params.zoom = parseInt(params.zoom);
+	params.padding = parseInt(params.padding);
 
 	const clusterIndex = new Supercluster({
 		radius: 50,
@@ -45,6 +49,7 @@ function mapboxClient( params ) {
 	}
 
 	window.map.on('load', function () {
+		loaded=true;
 		loadIcons(params.icons);
 		enableLocation();
 
@@ -153,8 +158,8 @@ function mapboxClient( params ) {
 			map.on('moveend', () => {
 				map.getSource('clusters').setData(getClusters());
 			});
-
-			clusterLoader();
+			if(params.json_url!=='None')
+				clusterLoader();
 
 		} else {
 			if(params.json_url!=='None') {
@@ -177,6 +182,7 @@ function mapboxClient( params ) {
 				window.map.getSource('data').setData(params.geojson);
 			}
 		}
+		process_queue();
 	});
 
 
@@ -444,7 +450,8 @@ function mapboxClient( params ) {
 	}
 
 	window.map.clearSelected = function (id,zoom) {
-		window.map.getSource('selected').setData({"type":"FeatureCollection","features":[]});
+		if(loaded)
+			window.map.getSource('selected').setData({"type":"FeatureCollection","features":[]});
 	}
 	window.map.setSelected = function (id,zoom) {
 		for (let feature in window.geojson.features) {
@@ -464,9 +471,24 @@ function mapboxClient( params ) {
 
 	window.map.addGeojson = function (geojson) {
 		window.geojson = geojson;
-		window.map.getSource('data').setData(geojson);
-		const bbox = turf.bbox(geojson);
-		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+		queue=true;
+		process_queue()
+
+	}
+
+	function process_queue() {
+		if(loaded&&queue) {
+			if(params.cluster==='True') {
+				clusterIndex.load(window.geojson.features);
+				map.getSource('clusters').setData(getClusters());
+			} else {
+
+				window.map.getSource('data').setData(window.geojson);
+				const bbox = turf.bbox(window.geojson);
+				window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+			}
+			queue=false;
+		}
 	}
 
 }
