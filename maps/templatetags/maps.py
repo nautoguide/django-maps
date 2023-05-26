@@ -60,6 +60,9 @@ def mapbox_cluster(**kwargs):
     controls = kwargs.get('controls', True)
     geojson = kwargs.get('geojson', {})
     cssClass = kwargs.get('cssClass', "map")
+    allClick = kwargs.get('allClick', False)
+    zoom = kwargs.get('zoom', 10)
+    padding = kwargs.get('padding', 50)
 
     return render_to_string('mapbox_insert_cluster.html',
                             {'params':
@@ -68,6 +71,9 @@ def mapbox_cluster(**kwargs):
                                   'maxZoom': maxZoom, 'cssClass': str(cssClass),
                                   'style': style, 'click_url': str(click_url),
                                   'location': str(location),
+                                  'allClick': str(allClick),
+                                  'zoom': str(zoom),
+                                  'padding': str(padding),
                                   'clickFunction': str(clickFunction),
                                   'locationFunction': str(locationFunction),
                                   'nearFunction': str(nearFunction), 'threshold': threshold,

@@ -158,8 +158,8 @@ function mapboxClient( params ) {
 			map.on('moveend', () => {
 				map.getSource('clusters').setData(getClusters());
 			});
-
-			clusterLoader();
+			if(params.json_url!=='None')
+				clusterLoader();
 
 		} else {
 			if(params.json_url!=='None') {
@@ -478,9 +478,15 @@ function mapboxClient( params ) {
 
 	function process_queue() {
 		if(loaded&&queue) {
-			window.map.getSource('data').setData(window.geojson);
-			const bbox = turf.bbox(window.geojson);
-			window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+			if(params.cluster==='True') {
+				clusterIndex.load(window.geojson.features);
+				map.getSource('clusters').setData(getClusters());
+			} else {
+
+				window.map.getSource('data').setData(window.geojson);
+				const bbox = turf.bbox(window.geojson);
+				window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+			}
 			queue=false;
 		}
 	}
