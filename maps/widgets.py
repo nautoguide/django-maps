@@ -5,7 +5,6 @@ class LocationWidget(Widget):
 
     defaults = {
         "map_center": [-0.9307443, 50.7980974],
-        "id": "location",  # adjust this as necessary
         "zoom": 10,
         "clickFunction": ""
     }
@@ -16,7 +15,8 @@ class LocationWidget(Widget):
             if attrs and key in attrs:
                 self.attrs[key] = attrs[key]
             else:
-                self.attrs[key] = self.defaults.get(key)
+                if key in self.defaults:
+                    self.attrs[key] = self.defaults.get(key)
         if attrs:
             self.attrs.update(attrs)
 

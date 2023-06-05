@@ -13,7 +13,6 @@ function mapboxAdminFromElement(element) {
 }
 
 function mapboxAdmin(widgetId, widgetValue) {
-
 	let map_element=document.getElementById(widgetId)
 	let center=JSON.parse(map_element.dataset.center);
 	let zoom=map_element.dataset.zoom;
