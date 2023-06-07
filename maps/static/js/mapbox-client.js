@@ -446,7 +446,7 @@ function mapboxClient( params ) {
 
 	window.map.zoomToExtent = function () {
 		const bbox = turf.bbox(window.geojson);
-		window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+		window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom})
 	}
 
 	window.map.clearSelected = function (id,zoom) {
@@ -473,7 +473,6 @@ function mapboxClient( params ) {
 		window.geojson = geojson;
 		queue=true;
 		process_queue()
-
 	}
 
 	function process_queue() {
