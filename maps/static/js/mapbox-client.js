@@ -483,8 +483,10 @@ function mapboxClient( params ) {
 			} else {
 
 				window.map.getSource('data').setData(window.geojson);
-				const bbox = turf.bbox(window.geojson);
-				window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+				if(window.geojson.features.length>0) {
+					const bbox = turf.bbox(window.geojson);
+					window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+				}
 			}
 			queue=false;
 		}
