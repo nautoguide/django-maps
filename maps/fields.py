@@ -6,11 +6,13 @@ from django.contrib.gis.geos import (
     Point,
 )
 
+
 class Location(Field):
     description = "A custom field to store a GEOMETRY type and return GeoJSON"
 
     geom_type = "POINT"
     geom_class = Point
+
     def db_type(self, connection):
         return 'GEOMETRY'
 
