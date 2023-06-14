@@ -438,9 +438,19 @@ function mapboxClient( params ) {
 			}).catch(error => console.error(error));
 	}
 
+	function pointDecoder(point) {
+		let decoded_point=point;
+		if(typeof decoded_point === 'string') {
+			decoded_point=JSON.parse(decoded_point)
+		}
+		if(decoded_point.coordinates)
+			return decoded_point;
+		console.log(`${point} does not seem valid`);
+	}
 	// External functions
 
 	window.map.moveToPoint = function (point, zoom) {
+		point=pointDecoder(point);
 		window.map.flyTo({center: point.coordinates, zoom: zoom});
 	}
 
