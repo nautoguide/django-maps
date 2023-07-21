@@ -136,7 +136,8 @@ function mapboxClient( params ) {
 				source: 'clusters',
 				filter: ['!=', 'cluster', true],
 				layout: {
-					'icon-image': [
+					// TODO NMRN fix
+					/*'icon-image': [
 						'match',
 						['get', 'category'], // Get the 'category' property from the feature
 						'ship', 'ship',
@@ -145,7 +146,8 @@ function mapboxClient( params ) {
 						'school', 'school',
 						'submarine', 'submarine',
 						'sailor'
-					],
+					],*/
+					'icon-image': ['get', 'icon'],
 					'icon-size': 1, // Set the icon size
 					'icon-allow-overlap': true,
 					'icon-anchor': 'bottom'
