@@ -11345,7 +11345,7 @@
       "paint": {
         "line-color": ["coalesce", ["get", "color"], "#F9AA33"],
         "line-width": ["coalesce", ["get", "width"], 2],
-        "line-opacity": 1
+        "line-opacity": ["coalesce", ["get", "opacity"], 1]
       }
     },
     {
