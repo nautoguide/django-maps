@@ -42,6 +42,12 @@ Add 'maps' to your INSTALLED_APPS apps
     ]
 ```
 
+If you need any API KEYS then add them to your settings.py
+
+```
+MAP_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
 ## Adding a map location to your model
 
 in models.py

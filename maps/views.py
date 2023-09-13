@@ -1,6 +1,7 @@
 import json
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.conf import settings
 
 
 def mapfiles(request):
@@ -13,7 +14,8 @@ def mapfiles(request):
         scheme = 'https'
     context = {
         'host': host,
-        'scheme': scheme
+        'scheme': scheme,
+        'MAP_API_KEY': settings.MAP_API_KEY,
 
     }
     file_actual = f'map_styles/{file}'
