@@ -15,6 +15,13 @@
         "features": []
       }
     },
+    "lines-strings": {
+      "type": "geojson",
+      "data": {
+        "type": "FeatureCollection",
+        "features": []
+      }
+    },
     "location": {
       "type": "geojson",
       "data": {
@@ -11329,6 +11336,16 @@
         "line-color": "#F9AA33",
         "line-width": 5,
         "line-opacity": 0.2
+      }
+    },
+    {
+      "id": "lines-strings",
+      "type": "line",
+      "source": "lines-strings",
+      "paint": {
+        "line-color": ["coalesce", ["get", "color"], "#F9AA33"],
+        "line-width": ["coalesce", ["get", "width"], 2],
+        "line-opacity": 1
       }
     },
     {
