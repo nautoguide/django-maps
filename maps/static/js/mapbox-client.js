@@ -3,6 +3,7 @@ function mapboxClient( params ) {
 
 	let queue = [];
 	let loaded = false;
+	let currentLocation = null;
 
 	params.maxZoom = parseInt(params.maxZoom);
 	params.zoom = parseInt(params.zoom);
@@ -15,12 +16,14 @@ function mapboxClient( params ) {
 
 	window.geojson={'data':{"type":"FeatureCollection","features":[]}};
 	clusterIndex.load(window.geojson['data'].features);
-
 	if(params.nearFunction!=='None') {
 		params.nearFunction=window[params.nearFunction];
 	}
 	if(params.clickFunction!=='None') {
 		params.clickFunction=window[params.clickFunction];
+	}
+	if(params.locationFunction!=='None') {
+		params.locationFunction=window[params.locationFunction];
 	}
 
 	let page=1;
@@ -176,6 +179,9 @@ function mapboxClient( params ) {
 						}
 						const bbox = turf.bbox(data);
 						window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+						if (params.location === 'True' && currentLocation) {
+							checkNearPoints(currentLocation[0], currentLocation[1]);
+						}
 					})
 					.catch(error => console.error(error));
 			}
@@ -247,7 +253,6 @@ function mapboxClient( params ) {
 			.then(response => response.json())
 			.then(data => {
 				// Process the retrieved data here
-				debugger;
 				window.map.getSource('data').setData(data);
 				const bbox = turf.bbox(data);
 				window.map.fitBounds(bbox, {padding: 200})
@@ -369,6 +374,7 @@ function mapboxClient( params ) {
 			params.locationFunction(pointJson);
 		}
 		logDebug(`Current location: (${latitude}, ${longitude})`);
+		currentLocation=[latitude, longitude];
 		checkNearPoints(latitude, longitude);
 	}
 
@@ -499,6 +505,9 @@ function mapboxClient( params ) {
 					if (window.geojson[queue[layer]].features.length > 0) {
 						const bbox = turf.bbox(window.geojson[queue[layer]]);
 						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+						if (params.location === 'True' && currentLocation) {
+							checkNearPoints(currentLocation[0], currentLocation[1]);
+						}
 					}
 				}
 			}
