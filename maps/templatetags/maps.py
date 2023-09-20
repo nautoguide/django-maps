@@ -26,6 +26,8 @@ def mapbox_simple(**kwargs):
     allClick = kwargs.get('allClick', False)
     zoom = kwargs.get('zoom', 10)
     padding = kwargs.get('padding', 50)
+    fixedPrecision = kwargs.get('fixedPrecision', 14)
+    updateInterval = kwargs.get('updateInterval', 10)
 
     return render_to_string('mapbox_simple_map_insert.html', {'params':
                                                                   {'links': str(links), 'json_url': str(json_url), 'query': str(query),
@@ -36,6 +38,8 @@ def mapbox_simple(**kwargs):
                                                                    'allClick': str(allClick),
                                                                    'zoom': str(zoom),
                                                                    'padding': str(padding),
+                                                                   'fixedPrecision': fixedPrecision,
+                                                                   'updateInterval': updateInterval,
                                                                    'clickFunction': str(clickFunction),
                                                                    'locationFunction': str(locationFunction),
                                                                    'nearFunction': str(nearFunction), 'threshold': threshold,

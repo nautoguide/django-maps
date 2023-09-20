@@ -9,6 +9,13 @@ function mapboxClient( params ) {
 	params.zoom = parseInt(params.zoom);
 	params.padding = parseInt(params.padding);
 
+	// location stuff
+	let latSum = 0;
+	let lonSum = 0;
+	let updateCount = 0;
+	let intervalId;
+	let firstUpdate = true;
+
 	const clusterIndex = new Supercluster({
 		radius: 50,
 		maxZoom: 12
@@ -40,9 +47,11 @@ function mapboxClient( params ) {
 		minZoom: 0,
 		pitch: 0,
 		center: params.center,
-		zoom: params.zoom
+		zoom: params.zoom,
+		attributionControl: false,
+		clickTolerance: 1,
+		dragPan: true,
 	}
-
 	if (params.query !== 'None')
 		params.json_url += '?' + params.query + '=' + document.getElementById(params.query).value;
 
@@ -161,6 +170,7 @@ function mapboxClient( params ) {
 			});
 
 			map.on('moveend', () => {
+				console.log('moveend');
 				map.getSource('clusters').setData(getClusters());
 			});
 			if(params.json_url!=='None')
@@ -212,6 +222,8 @@ function mapboxClient( params ) {
 	});
 
 	window.map.on('click', 'data', (event) => {
+		console.log('data clicked at:', event.lngLat);
+
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0 && params.click_url !== 'None') {
 			params.click_url=params.click_url.replace('${id}',features[0].properties.id)
@@ -327,7 +339,7 @@ function mapboxClient( params ) {
 			window.geojson['data'].features.forEach(point => {
 				const [pointLon, pointLat] = point.geometry.coordinates;
 				const distance = calculateDistance(latitude, longitude, pointLat, pointLon);
-				logDebug(distance)
+				logDebug(`distance: ${distance}`);
 				if (distance <= params.threshold) {
 					candidate_list.push({point:point,distance:distance})
 
@@ -358,24 +370,60 @@ function mapboxClient( params ) {
 			console.log(text)
 	}
 
-	function onPositionUpdate(position) {
-		const {latitude, longitude} = position.coords;
-		let pointJson = {
-			"type": "Feature",
-			"geometry": {"coordinates": [longitude, latitude], "type": "Point"},
-			"properties": {"icon": "point"}
+	function initPositionAveraging() {
+		// Clear any existing interval
+		if (intervalId) {
+			clearInterval(intervalId);
 		}
 
-		window.map.getSource('location').setData({
-			type: "FeatureCollection",
-			features: [pointJson]
-		});
-		if (typeof params.locationFunction === 'function') {
-			params.locationFunction(pointJson);
+		// Set up a new interval to calculate the average every x seconds
+		intervalId = setInterval(() => {
+			intervalFunction();
+		}, params.updateInterval * 1000);
+	}
+
+	function intervalFunction() {
+		if (updateCount > 0) {
+			let avgLat = latSum / updateCount;
+			let avgLon = lonSum / updateCount;
+
+			// Call your update function with the average location
+			let pointJson = {
+				"type": "Feature",
+				"geometry": {"coordinates": [avgLon, avgLat], "type": "Point"},
+				"properties": {"icon": "point"}
+			}
+
+			window.map.getSource('location').setData({
+				type: "FeatureCollection",
+				features: [pointJson]
+			});
+			if (typeof params.locationFunction === 'function') {
+				params.locationFunction(pointJson);
+			}
+			logDebug(`Current average location: (${avgLat}, ${avgLon}) precision: ${params.fixedPrecision} interval: ${params.updateInterval}`);
+			currentLocation=[avgLat, avgLon];
+			checkNearPoints(avgLat, avgLon);
+
+			// Reset the sum and count for the next interval
+			latSum = 0;
+			lonSum = 0;
+			updateCount = 0;
 		}
-		logDebug(`Current location: (${latitude}, ${longitude})`);
-		currentLocation=[latitude, longitude];
-		checkNearPoints(latitude, longitude);
+	}
+
+	function onPositionUpdate(position) {
+		let {latitude, longitude} = position.coords;
+		latitude=latitude.toFixed(params.fixedPrecision);
+		longitude=longitude.toFixed(params.fixedPrecision);
+		latSum += parseFloat(latitude);
+		lonSum += parseFloat(longitude);
+		updateCount++;
+		if(firstUpdate) {
+			firstUpdate=false;
+			intervalFunction();
+		}
+
 	}
 
 	function onPositionError(error) {
@@ -386,6 +434,7 @@ function mapboxClient( params ) {
 	function enableLocation() {
 		if (params.location === 'True') {
 			if ('geolocation' in navigator) {
+				initPositionAveraging();
 				navigator.geolocation.watchPosition(onPositionUpdate, onPositionError, {
 					enableHighAccuracy: true,
 					timeout: 5000,
