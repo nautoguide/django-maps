@@ -506,6 +506,13 @@ function mapboxClient( params ) {
 	}
 	// External functions
 
+
+	window.map.setLayerVisibility = function(layer, visibility) {
+		// Toggle the visibility
+		if(loaded)
+			map.setLayoutProperty(layer, 'visibility', visibility);
+	}
+
 	window.map.moveToPoint = function (point, zoom) {
 		point=pointDecoder(point);
 		window.map.flyTo({center: point.coordinates, zoom: zoom});
