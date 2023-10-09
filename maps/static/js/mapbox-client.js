@@ -4,6 +4,7 @@ function mapboxClient( params ) {
 	let queue = [];
 	let loaded = false;
 	let currentLocation = null;
+	let debug = false;
 
 	params.maxZoom = parseInt(params.maxZoom);
 	params.zoom = parseInt(params.zoom);
@@ -170,7 +171,6 @@ function mapboxClient( params ) {
 			});
 
 			map.on('moveend', () => {
-				console.log('moveend');
 				map.getSource('clusters').setData(getClusters());
 			});
 			if(params.json_url!=='None')
@@ -205,7 +205,7 @@ function mapboxClient( params ) {
 
 
 	window.map.on('click', (event) => {
-		console.log('Map clicked at:', event.lngLat);
+		logDebug('Map clicked at:', event.lngLat);
 		if(params.allClick === 'True') {
 			map.getSource('data').setData({
 				type: "FeatureCollection",
@@ -222,7 +222,6 @@ function mapboxClient( params ) {
 	});
 
 	window.map.on('click', 'data', (event) => {
-		console.log('data clicked at:', event.lngLat);
 
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0 && params.click_url !== 'None') {
@@ -364,10 +363,12 @@ function mapboxClient( params ) {
 
 	function logDebug(text) {
 		let debugwin = document.getElementById('debug');
-		if (debugwin)
+		if (debugwin) {
 			debugwin.value += text + "\n";
-		else
-			console.log(text)
+		} else {
+			if(debug===true)
+				console.log(text);
+		}
 	}
 
 	function initPositionAveraging() {
@@ -478,7 +479,6 @@ function mapboxClient( params ) {
 			.then(data => {
 
 				window.geojson['data'].features=[...window.geojson['data'].features,...data.features];
-				//console.log(data);
 				clusterIndex.load(window.geojson['data'].features);
 				map.getSource('clusters').setData(getClusters());
 				if(data.more===false) {
@@ -502,10 +502,15 @@ function mapboxClient( params ) {
 		}
 		if(decoded_point.coordinates)
 			return decoded_point;
-		console.log(`${point} does not seem valid`);
+		logDebug(`${point} does not seem valid`);
 	}
 	// External functions
 
+
+	window.map.debug = function () {
+		debug = !debug;
+		console.log(`debug: ${debug? 'on' : 'off'}`);
+	}
 
 	window.map.setLayerVisibility = function(layer, visibility) {
 		// Toggle the visibility
