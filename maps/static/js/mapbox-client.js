@@ -1,6 +1,5 @@
 //function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls,geojson ) {
 function mapboxClient( params ) {
-
 	let queue = [];
 	let loaded = false;
 	let currentLocation = null;
@@ -187,8 +186,10 @@ function mapboxClient( params ) {
 							const lineSource = createLineSource(data.features);
 							window.map.getSource('line-source').setData(lineSource);
 						}
-						const bbox = turf.bbox(data);
-						window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+						if(params.fit === 'True') {
+							const bbox = turf.bbox(data);
+							window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+						}
 						if (params.location === 'True' && currentLocation) {
 							checkNearPoints(currentLocation[0], currentLocation[1]);
 						}
@@ -564,8 +565,10 @@ function mapboxClient( params ) {
 				for(let layer in queue) {
 					window.map.getSource(queue[layer]).setData(window.geojson[queue[layer]]);
 					if (window.geojson[queue[layer]].features.length > 0) {
-						const bbox = turf.bbox(window.geojson[queue[layer]]);
-						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+						if(params.fit === 'True') {
+							const bbox = turf.bbox(window.geojson[queue[layer]]);
+							window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom});
+						}
 						if (params.location === 'True' && currentLocation) {
 							checkNearPoints(currentLocation[0], currentLocation[1]);
 						}
