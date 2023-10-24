@@ -1,10 +1,9 @@
-//function mapboxClient(style, center, icons, query, url, maxZoom, location, links, click_url, clickFunction, locationFunction, nearFunction,threshold,cluster,controls,geojson ) {
+
 function mapboxClient( params ) {
 	let queue = [];
 	let loaded = false;
 	let currentLocation = null;
 	let debug = false;
-
 	params.maxZoom = parseInt(params.maxZoom);
 	params.zoom = parseInt(params.zoom);
 	params.padding = parseInt(params.padding);
@@ -59,6 +58,21 @@ function mapboxClient( params ) {
 	if(params.controls==='True') {
 		window.map.addControl(new maplibregl.NavigationControl());
 	}
+
+	const draw = new MapboxDraw({
+		displayControlsDefault: false,
+// Select which mapbox-gl-draw control buttons to add to the map.
+		controls: {
+			polygon: true,
+			trash: true
+		},
+// Set mapbox-gl-draw to draw by default.
+// The user does not have to click the polygon control button first.
+		//defaultMode: 'draw_line_string'
+	});
+
+	map.addControl(draw);
+
 
 	window.map.on('load', function () {
 		loaded=true;
@@ -205,22 +219,7 @@ function mapboxClient( params ) {
 	});
 
 
-	window.map.on('click', (event) => {
-		logDebug('Map clicked at:', event.lngLat);
-		if(params.allClick === 'True') {
-			map.getSource('data').setData({
-				type: "FeatureCollection",
-				features: [{
-					"type": "Feature",
-					"geometry": {"coordinates": [event.lngLat.lng, event.lngLat.lat], "type": "Point"},
-					"properties": {"icon": "point"}
-				}]
-			});
-			if (typeof params.clickFunction === 'function') {
-				params.clickFunction([event.lngLat.lng, event.lngLat.lat]);
-			}
-		}
-	});
+
 
 	window.map.on('click', 'data', (event) => {
 
@@ -533,6 +532,7 @@ function mapboxClient( params ) {
 		if(loaded)
 			window.map.getSource('selected').setData({"type":"FeatureCollection","features":[]});
 	}
+
 	window.map.setSelected = function (id,zoom) {
 		for (let feature in window.geojson['data'].features) {
 			if (window.geojson['data'].features[feature].properties.id === id) {
@@ -549,11 +549,33 @@ function mapboxClient( params ) {
 		}
 	}
 
+	window.map.clickEvent = function (hook,add_point,layer) {
+		layer=layer||'data';
+		console.log('clickEvent');
+		window.map.on('click', (event) => {
+			logDebug('Map clicked at:', event.lngLat);
+			if (add_point === true) {
+				window.geojson[layer].features.push({
+					"type": "Feature",
+					"geometry": {"coordinates": [event.lngLat.lng, event.lngLat.lat], "type": "Point"},
+					"properties": {"icon": "point"}
+				});
+				map.getSource('data').setData(window.geojson[layer]);
+			}
+			hook([event.lngLat.lng, event.lngLat.lat]);
+		});
+	}
+
 	window.map.addGeojson = function (geojson, layer) {
 		layer=layer||'data';
 		window.geojson[layer] = geojson;
 		queue.push(layer);
 		process_queue()
+	}
+
+	window.map.drawLineString = function () {
+		let feature = { type: 'Point', coordinates: [0, 0] };
+		let  featureIds = draw.add(feature);
 	}
 
 	function process_queue() {
