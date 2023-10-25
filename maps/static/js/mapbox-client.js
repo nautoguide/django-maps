@@ -63,7 +63,7 @@ function mapboxClient( params ) {
 		displayControlsDefault: false,
 // Select which mapbox-gl-draw control buttons to add to the map.
 		controls: {
-			polygon: true,
+			polygon: false,
 			trash: true
 		},
 // Set mapbox-gl-draw to draw by default.
@@ -573,9 +573,12 @@ function mapboxClient( params ) {
 		process_queue()
 	}
 
-	window.map.drawLineString = function () {
+	window.map.drawLineString = function (callbackUpdate) {
 		let feature = { type: 'Point', coordinates: [0, 0] };
-		let  featureIds = draw.add(feature);
+		//let  featureIds = draw.add(feature);
+		//map.on('draw.update', callbackUpdate);
+		map.on('draw.create', callbackUpdate);
+		draw.changeMode("draw_line_string", {})
 	}
 
 	function process_queue() {

@@ -19,6 +19,13 @@ class Location(Field):
     def from_db_value(self, value, expression, connection):
         return GEOSGeometry(value)
 
+
+    def get_prep_value(self, value):
+        # We actually need to save as string, when using the save we get a GEOSGeometry object, so we need to convert
+        if isinstance(value, Point):
+            return str(value)
+        return value
+
     def formfield(self, **kwargs):
         defaults = {'form_class': LocationFormField, **kwargs}
         return super().formfield(**defaults)
