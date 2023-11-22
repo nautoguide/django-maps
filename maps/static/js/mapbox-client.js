@@ -221,7 +221,7 @@ function mapboxClient( params ) {
 
 
 
-	window.map.on('click', 'data', (event) => {
+	/*window.map.on('click', 'data', (event) => {
 
 		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
 		if (features.length > 0 && params.click_url !== 'None') {
@@ -232,7 +232,7 @@ function mapboxClient( params ) {
 			params.clickFunction(features[0].properties.id);
 		}
 	});
-
+*/
 	map.on('click', 'unclustered-points', (event) => {
 		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
 		if (features.length > 0 && click_url !== 'None') {
@@ -551,7 +551,7 @@ function mapboxClient( params ) {
 
 	window.map.clickEvent = function (hook,add_point,layer) {
 		layer=layer||'data';
-		console.log('clickEvent');
+		console.log('New clickEvent');
 		window.map.on('click', (event) => {
 			logDebug('Map clicked at:', event.lngLat);
 			if (add_point === true) {
@@ -562,7 +562,7 @@ function mapboxClient( params ) {
 				});
 				map.getSource('data').setData(window.geojson[layer]);
 			}
-			hook([event.lngLat.lng, event.lngLat.lat]);
+			hook([event.lngLat.lng, event.lngLat.lat], event);
 		});
 	}
 
