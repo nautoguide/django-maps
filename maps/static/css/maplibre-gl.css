@@ -17,7 +17,7 @@
 }
 
 .mapboxgl-canvas-container.mapboxgl-interactive, .mapboxgl-ctrl-group button.mapboxgl-ctrl-compass, .maplibregl-canvas-container.maplibregl-interactive, .maplibregl-ctrl-group button.maplibregl-ctrl-compass {
-    cursor: grab;
+    cursor: default;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;

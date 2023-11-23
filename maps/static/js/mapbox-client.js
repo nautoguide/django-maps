@@ -15,6 +15,8 @@ function mapboxClient( params ) {
 	let intervalId;
 	let firstUpdate = true;
 
+	let events=[];
+
 	const clusterIndex = new Supercluster({
 		radius: 50,
 		maxZoom: 12
@@ -66,6 +68,124 @@ function mapboxClient( params ) {
 			polygon: false,
 			trash: true
 		},
+		styles: [
+			// ACTIVE (being drawn)
+			// line stroke
+			{
+				"id": "gl-draw-line",
+				"type": "line",
+				"filter": ["all", ["==", "$type", "LineString"], ["!=", "mode", "static"]],
+				"layout": {
+					"line-cap": "round",
+					"line-join": "round"
+				},
+				"paint": {
+					"line-color": "#D20C0C",
+					"line-dasharray": [0.2, 2],
+					"line-width": 4
+				}
+			},
+			// polygon fill
+			{
+				"id": "gl-draw-polygon-fill",
+				"type": "fill",
+				"filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+				"paint": {
+					"fill-color": "#D20C0C",
+					"fill-outline-color": "#D20C0C",
+					"fill-opacity": 0.1
+				}
+			},
+			// polygon mid points
+			{
+				'id': 'gl-draw-polygon-midpoint',
+				'type': 'circle',
+				'filter': ['all',
+					['==', '$type', 'Point'],
+					['==', 'meta', 'midpoint']],
+				'paint': {
+					'circle-radius': 12,
+					'circle-color': '#fbb03b'
+				}
+			},
+			// polygon outline stroke
+			// This doesn't style the first edge of the polygon, which uses the line stroke styling instead
+			{
+				"id": "gl-draw-polygon-stroke-active",
+				"type": "line",
+				"filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
+				"layout": {
+					"line-cap": "round",
+					"line-join": "round"
+				},
+				"paint": {
+					"line-color": "#D20C0C",
+					"line-dasharray": [0.2, 2],
+					"line-width": 4
+				}
+			},
+			// vertex point halos
+			{
+				"id": "gl-draw-polygon-and-line-vertex-halo-active",
+				"type": "circle",
+				"filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+				"paint": {
+					"circle-radius": 12,
+					"circle-color": "#FFF"
+				}
+			},
+			// vertex points
+			{
+				"id": "gl-draw-polygon-and-line-vertex-active",
+				"type": "circle",
+				"filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
+				"paint": {
+					"circle-radius": 8,
+					"circle-color": "#D20C0C",
+				}
+			},
+
+			// INACTIVE (static, already drawn)
+			// line stroke
+			{
+				"id": "gl-draw-line-static",
+				"type": "line",
+				"filter": ["all", ["==", "$type", "LineString"], ["==", "mode", "static"]],
+				"layout": {
+					"line-cap": "round",
+					"line-join": "round"
+				},
+				"paint": {
+					"line-color": "#000",
+					"line-width": 3
+				}
+			},
+			// polygon fill
+			{
+				"id": "gl-draw-polygon-fill-static",
+				"type": "fill",
+				"filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
+				"paint": {
+					"fill-color": "#000",
+					"fill-outline-color": "#000",
+					"fill-opacity": 0.1
+				}
+			},
+			// polygon outline
+			{
+				"id": "gl-draw-polygon-stroke-static",
+				"type": "line",
+				"filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
+				"layout": {
+					"line-cap": "round",
+					"line-join": "round"
+				},
+				"paint": {
+					"line-color": "#000",
+					"line-width": 3
+				}
+			}
+		]
 // Set mapbox-gl-draw to draw by default.
 // The user does not have to click the polygon control button first.
 		//defaultMode: 'draw_line_string'
@@ -549,21 +669,34 @@ function mapboxClient( params ) {
 		}
 	}
 
-	window.map.clickEvent = function (hook,add_point,layer) {
-		layer=layer||'data';
-		console.log('New clickEvent');
-		window.map.on('click', (event) => {
-			logDebug('Map clicked at:', event.lngLat);
-			if (add_point === true) {
-				window.geojson[layer].features.push({
+	window.map.clickEvent = function (options) {
+		// hook,add_point,layer
+		// merge options with defaults
+		options = Object.assign({
+			hook: null,
+			layer: 'data',
+			clear: true
+		}, options);
+		const callback = (event) => {
+			if (options.add_point === true) {
+				window.geojson[options.layer].features.push({
 					"type": "Feature",
 					"geometry": {"coordinates": [event.lngLat.lng, event.lngLat.lat], "type": "Point"},
 					"properties": {"icon": "point"}
 				});
-				map.getSource('data').setData(window.geojson[layer]);
+				map.getSource(options.layer).setData(window.geojson[options.layer]);
 			}
-			hook([event.lngLat.lng, event.lngLat.lat], event);
-		});
+			options.hook([event.lngLat.lng, event.lngLat.lat], event);
+		}
+
+		if(options.clear===true) {
+			for(let i in events) {
+				window.map.off('click',events[i].hook);
+			}
+			events=[];
+		}
+		window.map.on('click', options.hook);
+		events.push(options);
 	}
 
 	window.map.addGeojson = function (geojson, layer) {
@@ -572,12 +705,31 @@ function mapboxClient( params ) {
 		queue.push(layer);
 		process_queue()
 	}
+	// Clear a layer of all features
+	window.map.clearLayer = function (layer) {
+		layer=layer||'data';
+		window.geojson[layer] = {"type":"FeatureCollection","features":[]};
+		queue.push(layer);
+		process_queue()
 
-	window.map.drawLineString = function (callbackUpdate) {
-		let feature = { type: 'Point', coordinates: [0, 0] };
-		//let  featureIds = draw.add(feature);
-		//map.on('draw.update', callbackUpdate);
-		map.on('draw.create', callbackUpdate);
+	}
+
+	window.map.drawLineString = function (json) {
+		if(json&&json.features&&json.features.length>0&&json.features[0].geometry&&json.features[0].geometry.coordinates&&json.features[0].geometry.coordinates.length>0) {
+			let id=draw.add(json.features[0]);
+			draw.changeMode("direct_select", {featureId:id[0]})
+		} else {
+			draw.changeMode("draw_line_string", {})
+		}
+	}
+
+	window.map.getDrawnLineString = function () {
+		let data=draw.getAll();
+		return data;
+	}
+
+	window.map.clearDrawnLineString = function () {
+		draw.deleteAll();
 		draw.changeMode("draw_line_string", {})
 	}
 
