@@ -15,6 +15,8 @@ function mapboxClient( params ) {
 	let intervalId;
 	let firstUpdate = true;
 
+	let deleteMode = false;
+
 	let events=[];
 
 	const clusterIndex = new Supercluster({
@@ -714,13 +716,26 @@ function mapboxClient( params ) {
 
 	}
 
-	window.map.drawLineString = function (json) {
+	window.map.drawLineString = function (json,selectCallback) {
 		if(json&&json.features&&json.features.length>0&&json.features[0].geometry&&json.features[0].geometry.coordinates&&json.features[0].geometry.coordinates.length>0) {
 			let id=draw.add(json.features[0]);
 			draw.changeMode("direct_select", {featureId:id[0]})
 		} else {
 			draw.changeMode("draw_line_string", {})
 		}
+
+		map.on('draw.selectionchange', function (e) {
+			// Only fire if we have features selected
+			if(e.features.length>0&&deleteMode===true) {
+				deleteSelected();
+			} else {
+				console.log("click away")
+			}
+		});
+	}
+
+	window.map.toggleDeleteMode = function () {
+		deleteMode=!deleteMode;
 	}
 
 	window.map.getDrawnLineString = function () {
@@ -731,6 +746,27 @@ function mapboxClient( params ) {
 	window.map.clearDrawnLineString = function () {
 		draw.deleteAll();
 		draw.changeMode("draw_line_string", {})
+	}
+
+	function deleteSelected() {
+		let id=draw.getSelectedIds();
+		console.log(id);
+		// wrap in timeout to allow draw to finish
+
+			// We only delete if something is selected
+			if(id!==undefined&&id.length>0) {
+				//debugger;
+				console.log(`deleting point from ${id[0]}`);
+				draw.trash();
+				// Get the id of the first feature
+
+				// Select the feature by its id
+				console.log(`selecting point ${id[0]}`);
+				//draw.changeMode("direct_select", {featureId: id[0]});
+			}
+
+
+
 	}
 
 	function process_queue() {
