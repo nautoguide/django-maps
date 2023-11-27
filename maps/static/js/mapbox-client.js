@@ -15,7 +15,9 @@ function mapboxClient( params ) {
 	let intervalId;
 	let firstUpdate = true;
 
-	let deleteMode = false;
+	let draw_point_mode="add";
+	let draw_actual_points=[];
+
 
 	let events=[];
 
@@ -63,137 +65,7 @@ function mapboxClient( params ) {
 		window.map.addControl(new maplibregl.NavigationControl());
 	}
 
-	const draw = new MapboxDraw({
-		displayControlsDefault: false,
-// Select which mapbox-gl-draw control buttons to add to the map.
-		controls: {
-			polygon: false,
-			trash: true
-		},
-		styles: [
-			// ACTIVE (being drawn)
-			// line stroke
-			{
-				"id": "gl-draw-line",
-				"type": "line",
-				"filter": ["all", ["==", "$type", "LineString"], ["!=", "mode", "static"]],
-				"layout": {
-					"line-cap": "round",
-					"line-join": "round"
-				},
-				"paint": {
-					"line-color": "#D20C0C",
-					"line-dasharray": [0.2, 2],
-					"line-width": 4
-				}
-			},
-			// polygon fill
-			{
-				"id": "gl-draw-polygon-fill",
-				"type": "fill",
-				"filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-				"paint": {
-					"fill-color": "#D20C0C",
-					"fill-outline-color": "#D20C0C",
-					"fill-opacity": 0.1
-				}
-			},
-			// polygon mid points
-			{
-				'id': 'gl-draw-polygon-midpoint',
-				'type': 'circle',
-				'filter': ['all',
-					['==', '$type', 'Point'],
-					['==', 'meta', 'midpoint']],
-				'paint': {
-					'circle-radius': 12,
-					'circle-color': '#fbb03b'
-				}
-			},
-			// polygon outline stroke
-			// This doesn't style the first edge of the polygon, which uses the line stroke styling instead
-			{
-				"id": "gl-draw-polygon-stroke-active",
-				"type": "line",
-				"filter": ["all", ["==", "$type", "Polygon"], ["!=", "mode", "static"]],
-				"layout": {
-					"line-cap": "round",
-					"line-join": "round"
-				},
-				"paint": {
-					"line-color": "#D20C0C",
-					"line-dasharray": [0.2, 2],
-					"line-width": 4
-				}
-			},
-			// vertex point halos
-			{
-				"id": "gl-draw-polygon-and-line-vertex-halo-active",
-				"type": "circle",
-				"filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
-				"paint": {
-					"circle-radius": 12,
-					"circle-color": "#FFF"
-				}
-			},
-			// vertex points
-			{
-				"id": "gl-draw-polygon-and-line-vertex-active",
-				"type": "circle",
-				"filter": ["all", ["==", "meta", "vertex"], ["==", "$type", "Point"], ["!=", "mode", "static"]],
-				"paint": {
-					"circle-radius": 8,
-					"circle-color": "#D20C0C",
-				}
-			},
-
-			// INACTIVE (static, already drawn)
-			// line stroke
-			{
-				"id": "gl-draw-line-static",
-				"type": "line",
-				"filter": ["all", ["==", "$type", "LineString"], ["==", "mode", "static"]],
-				"layout": {
-					"line-cap": "round",
-					"line-join": "round"
-				},
-				"paint": {
-					"line-color": "#000",
-					"line-width": 3
-				}
-			},
-			// polygon fill
-			{
-				"id": "gl-draw-polygon-fill-static",
-				"type": "fill",
-				"filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
-				"paint": {
-					"fill-color": "#000",
-					"fill-outline-color": "#000",
-					"fill-opacity": 0.1
-				}
-			},
-			// polygon outline
-			{
-				"id": "gl-draw-polygon-stroke-static",
-				"type": "line",
-				"filter": ["all", ["==", "$type", "Polygon"], ["==", "mode", "static"]],
-				"layout": {
-					"line-cap": "round",
-					"line-join": "round"
-				},
-				"paint": {
-					"line-color": "#000",
-					"line-width": 3
-				}
-			}
-		]
-// Set mapbox-gl-draw to draw by default.
-// The user does not have to click the polygon control button first.
-		//defaultMode: 'draw_line_string'
-	});
-
-	map.addControl(draw);
+	const canvas = map.getCanvasContainer();
 
 
 	window.map.on('load', function () {
@@ -342,19 +214,6 @@ function mapboxClient( params ) {
 
 
 
-
-	/*window.map.on('click', 'data', (event) => {
-
-		const features = window.map.queryRenderedFeatures(event.point, {layers: ['data']});
-		if (features.length > 0 && params.click_url !== 'None') {
-			params.click_url=params.click_url.replace('${id}',features[0].properties.id)
-			window.location = params.click_url;
-		}
-		if( typeof params.clickFunction === 'function') {
-			params.clickFunction(features[0].properties.id);
-		}
-	});
-*/
 	map.on('click', 'unclustered-points', (event) => {
 		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
 		if (features.length > 0 && click_url !== 'None') {
@@ -716,57 +575,184 @@ function mapboxClient( params ) {
 
 	}
 
-	window.map.drawLineString = function (json,selectCallback) {
-		if(json&&json.features&&json.features.length>0&&json.features[0].geometry&&json.features[0].geometry.coordinates&&json.features[0].geometry.coordinates.length>0) {
-			let id=draw.add(json.features[0]);
-			draw.changeMode("direct_select", {featureId:id[0]})
-		} else {
-			draw.changeMode("draw_line_string", {})
+	window.map.LineDrawMode = function (json) {
+		let moving_point=null;
+		window.geojson["draw-end-points"]={"type":"FeatureCollection","features":[]};
+		draw_actual_points=[];
+
+		function onMove(e) {
+			const coords = e.lngLat;
+			draw_actual_points[moving_point]=[coords.lng, coords.lat];
+			_drawLine();
+			canvas.style.cursor = 'grabbing';
 		}
 
-		map.on('draw.selectionchange', function (e) {
-			// Only fire if we have features selected
-			if(e.features.length>0&&deleteMode===true) {
-				deleteSelected();
-			} else {
-				console.log("click away")
-			}
+		function onUp(e) {
+			canvas.style.cursor = '';
+			map.off('mousemove', onMove);
+			map.off('touchmove', onMove);
+		}
+
+		map.on('mouseenter', 'draw-end-points', () => {
+			map.setPaintProperty('draw-end-points', 'circle-color', '#3bb2d0');
+			canvas.style.cursor = 'move';
 		});
+
+		map.on('mouseleave', 'draw-end-points', () => {
+			map.setPaintProperty('draw-end-points', 'circle-color', '#D20C0C');
+			canvas.style.cursor = '';
+		});
+
+		map.on('mouseenter', 'draw-mid-points', () => {
+			map.setPaintProperty('draw-mid-points', 'circle-color', '#3bb2d0');
+			canvas.style.cursor = 'grab';
+		});
+
+		map.on('mouseleave', 'draw-mid-points', () => {
+			map.setPaintProperty('draw-mid-points', 'circle-color', '#EA580C');
+			canvas.style.cursor = '';
+		});
+
+		map.on('mousedown', 'draw-end-points', (e) => {
+			e.preventDefault();
+			moving_point=e.features[0].properties.actual_index;
+			canvas.style.cursor = 'grab';
+			map.on('mousemove', onMove);
+			map.once('mouseup', onUp);
+		});
+
+		map.on('mousedown', 'draw-mid-points', (e) => {
+			e.preventDefault();
+			// add a new point at the midpoint in the array
+			draw_actual_points.splice(e.features[0].properties.actual_index+1,0,[e.lngLat.lng, e.lngLat.lat]);
+			_drawLine();
+			canvas.style.cursor = '';
+		});
+
+		// json contains a line string we need to convert to points in draw_actual_points
+		if(json&&json.features&&json.features.length>0&&json.features[0].geometry&&json.features[0].geometry.coordinates&&json.features[0].geometry.coordinates.length>0) {
+			draw_actual_points=json.features[0].geometry.coordinates;
+			// Create a line between all the points
+			let line = {
+				type: "Feature",
+				geometry: {
+					type: "LineString",
+					coordinates: draw_actual_points
+				}
+			};
+			// Draw the line on the map
+			window.map.getSource("draw-vertex").setData(line);
+			_drawLine();
+		}
+
+
+		function addPoint(e) {
+			let point = [e.lngLat.lng, e.lngLat.lat];
+			const features = window.map.queryRenderedFeatures(e.point, {layers: ['draw-end-points']});
+
+			if(draw_point_mode==="add") {
+				if (features.length > 0) {
+					// This is a move then handled else where
+				} else {
+					draw_actual_points.push(point);
+					// Create a line between all the points
+					_drawLine();
+				}
+			} else {
+				// Delete mode
+				// Find any points within 10 pixels of the click
+				if (features.length > 0) {
+					// Delete the point
+					// find the point in draw_actual_points using the coordinates
+					for(let i in draw_actual_points) {
+						// fuzzy match of coordinates by 0.0001
+
+						if(_fuzzyMatch(draw_actual_points[i][0],features[0].geometry.coordinates[0])&&_fuzzyMatch(draw_actual_points[i][1],features[0].geometry.coordinates[1])) {
+							draw_actual_points.splice(i,1);
+							break;
+						}
+					}
+					_drawLine();
+				}
+			}
+		}
+		window.map.clickEvent({"hook":addPoint})
 	}
 
+	function _fuzzyMatch(point1,point2,precision) {
+		precision=precision||0.0001;
+		//console.log(`points: ${point1}:${point2} diff: ${point1-point2} - precision: ${precision}`);
+		if(point1===point2&&point1===point2)
+			return true;
+		if(point1-precision<=point2&&point1+precision>=point2&&point1-precision<=point2&&point1+precision>=point2)
+			return true;
+		return false;
+	}
+
+	function _findMidpoint(pointA, pointB) {
+		return [(pointA[0] + pointB[0]) / 2, (pointA[1] + pointB[1]) / 2];
+	}
+
+	function _drawLine() {
+		let line = {
+			type: "Feature",
+			geometry: {
+				type: "LineString",
+				coordinates: draw_actual_points
+			}
+		};
+		// Draw the line on the map
+		window.geojson["draw-end-points"]={"type":"FeatureCollection","features":[]};
+		window.geojson["draw-mid-points"]={"type":"FeatureCollection","features":[]};
+
+		// Make the actual points geojson
+		for(let i in draw_actual_points) {
+			window.geojson["draw-end-points"].features.push({
+				"type": "Feature",
+				"geometry": {"coordinates": draw_actual_points[i], "type": "Point"},
+				"properties": {"actual_index": i }
+			});
+		}
+
+		// Make the mid points geojson
+		for(let i=0;i<draw_actual_points.length-1;i++) {
+			let mid_point=_findMidpoint(draw_actual_points[i],draw_actual_points[i+1]);
+			window.geojson["draw-mid-points"].features.push({
+				"type": "Feature",
+				"geometry": {"coordinates": [mid_point[0],mid_point[1]], "type": "Point"},
+				"properties": {"actual_index": i }
+			});
+		}
+
+		map.getSource("draw-mid-points").setData(window.geojson["draw-mid-points"]);
+		map.getSource("draw-end-points").setData(window.geojson["draw-end-points"]);
+		window.map.getSource("draw-vertex").setData(line);
+
+	}
+
+
 	window.map.toggleDeleteMode = function () {
-		deleteMode=!deleteMode;
+		if(draw_point_mode==="add")
+			draw_point_mode="delete";
+		else
+			draw_point_mode="add";
 	}
 
 	window.map.getDrawnLineString = function () {
-		let data=draw.getAll();
+		// TODO Convert
+		let data= {"type":"FeatureCollection","features":[{
+			type: "Feature",
+			geometry: {
+				type: "LineString",
+				coordinates: draw_actual_points
+			}
+		}]};
 		return data;
 	}
 
 	window.map.clearDrawnLineString = function () {
-		draw.deleteAll();
-		draw.changeMode("draw_line_string", {})
-	}
-
-	function deleteSelected() {
-		let id=draw.getSelectedIds();
-		console.log(id);
-		// wrap in timeout to allow draw to finish
-
-			// We only delete if something is selected
-			if(id!==undefined&&id.length>0) {
-				//debugger;
-				console.log(`deleting point from ${id[0]}`);
-				draw.trash();
-				// Get the id of the first feature
-
-				// Select the feature by its id
-				console.log(`selecting point ${id[0]}`);
-				//draw.changeMode("direct_select", {featureId: id[0]});
-			}
-
-
-
+		draw_actual_points=[];
+		_drawLine();
 	}
 
 	function process_queue() {
