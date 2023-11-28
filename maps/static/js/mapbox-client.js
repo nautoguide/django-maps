@@ -615,10 +615,18 @@ function mapboxClient( params ) {
 
 		map.on('mousedown', 'draw-end-points', (e) => {
 			e.preventDefault();
-			moving_point=e.features[0].properties.actual_index;
-			canvas.style.cursor = 'grab';
-			map.on('mousemove', onMove);
-			map.once('mouseup', onUp);
+			if(e.originalEvent.which===1) {
+				// left click
+				moving_point = e.features[0].properties.actual_index;
+				canvas.style.cursor = 'grab';
+				map.on('mousemove', onMove);
+				map.once('mouseup', onUp);
+			}
+			if(e.originalEvent.which===3) {
+				// right click
+				draw_actual_points.splice(e.features[0].properties.actual_index,1);
+				_drawLine();
+			}
 		});
 
 		map.on('mousedown', 'draw-mid-points', (e) => {
@@ -626,7 +634,10 @@ function mapboxClient( params ) {
 			// add a new point at the midpoint in the array
 			draw_actual_points.splice(e.features[0].properties.actual_index+1,0,[e.lngLat.lng, e.lngLat.lat]);
 			_drawLine();
-			canvas.style.cursor = '';
+			moving_point=e.features[0].properties.actual_index+1;
+			canvas.style.cursor = 'grab';
+			map.on('mousemove', onMove);
+			map.once('mouseup', onUp);
 		});
 
 		// json contains a line string we need to convert to points in draw_actual_points
