@@ -631,13 +631,15 @@ function mapboxClient( params ) {
 
 		map.on('mousedown', 'draw-mid-points', (e) => {
 			e.preventDefault();
-			// add a new point at the midpoint in the array
-			draw_actual_points.splice(e.features[0].properties.actual_index+1,0,[e.lngLat.lng, e.lngLat.lat]);
-			_drawLine();
-			moving_point=e.features[0].properties.actual_index+1;
-			canvas.style.cursor = 'grab';
-			map.on('mousemove', onMove);
-			map.once('mouseup', onUp);
+			if(e.originalEvent.which===1) {
+				// add a new point at the midpoint in the array
+				draw_actual_points.splice(e.features[0].properties.actual_index + 1, 0, [e.lngLat.lng, e.lngLat.lat]);
+				_drawLine();
+				moving_point = e.features[0].properties.actual_index + 1;
+				canvas.style.cursor = 'grab';
+				map.on('mousemove', onMove);
+				map.once('mouseup', onUp);
+			}
 		});
 
 		// json contains a line string we need to convert to points in draw_actual_points
