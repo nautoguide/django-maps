@@ -253,7 +253,7 @@ function mapboxClient( params ) {
 
 	function loadIcons(icons) {
 		icons.forEach((icon) => {
-			window.map.loadImage(icon.url, (error, image) => {
+			window.map.loadImage(icon.url+"?cacheblock=true", (error, image) => {
 				if (error) {
 					console.error('Error loading icon:', error);
 					return;
