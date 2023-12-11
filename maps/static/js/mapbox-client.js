@@ -184,26 +184,7 @@ function mapboxClient( params ) {
 				clusterLoader();
 
 		} else {
-			if(params.json_url!=='None') {
-				fetch(params.json_url)
-					.then(response => response.json())
-					.then(data => {
-						window.geojson['data'] = data;
-						window.map.getSource('data').setData(data);
-						if (params.links === 'True') {
-							const lineSource = createLineSource(data.features);
-							window.map.getSource('line-source').setData(lineSource);
-						}
-						if(params.fit === 'True') {
-							const bbox = turf.bbox(data);
-							window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
-						}
-						if (params.location === 'True' && currentLocation) {
-							checkNearPoints(currentLocation[0], currentLocation[1]);
-						}
-					})
-					.catch(error => console.error(error));
-			}
+			window.map.reload_data();
 			if(params.geojson&&params.geojson.type) {
 				window.geojson['data'] = params.geojson;
 				window.map.getSource('data').setData(params.geojson);
@@ -212,7 +193,29 @@ function mapboxClient( params ) {
 		process_queue();
 	});
 
-
+	window.map.reload_data = function ()
+	{
+		if(params.json_url!=='None') {
+			fetch(params.json_url)
+				.then(response => response.json())
+				.then(data => {
+					window.geojson['data'] = data;
+					window.map.getSource('data').setData(data);
+					if (params.links === 'True') {
+						const lineSource = createLineSource(data.features);
+						window.map.getSource('line-source').setData(lineSource);
+					}
+					if(params.fit === 'True') {
+						const bbox = turf.bbox(data);
+						window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+					}
+					if (params.location === 'True' && currentLocation) {
+						checkNearPoints(currentLocation[0], currentLocation[1]);
+					}
+				})
+				.catch(error => console.error(error));
+		}
+	}
 
 	map.on('click', 'unclustered-points', (event) => {
 		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
@@ -566,6 +569,24 @@ function mapboxClient( params ) {
 		queue.push(layer);
 		process_queue()
 	}
+
+	window.map.addFeature = function (feature, layer, replaceId) {
+		layer=layer||'data';
+		if(replaceId) {
+			for(let i in window.geojson[layer].features) {
+				if(window.geojson[layer].features[i].properties.id===replaceId) {
+					window.geojson[layer].features[i].properties=feature.properties;
+					queue.push(layer);
+					process_queue()
+					return;
+				}
+			}
+		}
+		window.geojson[layer].features.push(feature);
+		queue.push(layer);
+		process_queue()
+	}
+
 	// Clear a layer of all features
 	window.map.clearLayer = function (layer) {
 		layer=layer||'data';
