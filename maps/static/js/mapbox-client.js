@@ -570,6 +570,18 @@ function mapboxClient( params ) {
 		process_queue()
 	}
 
+	window.map.deleteFeature = function (id, layer) {
+		layer=layer||'data';
+		for(let i in window.geojson[layer].features) {
+			if(window.geojson[layer].features[i].properties.id===id) {
+				window.geojson[layer].features.splice(i,1);
+				queue.push(layer);
+				process_queue()
+				return;
+			}
+		}
+	}
+
 	window.map.addFeature = function (feature, layer, replaceId) {
 		layer=layer||'data';
 		if(replaceId) {
