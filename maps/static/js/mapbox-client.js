@@ -513,8 +513,7 @@ function mapboxClient( params ) {
 	}
 
 	window.map.clearSelected = function (id,zoom) {
-		if(loaded)
-			window.map.getSource('selected').setData({"type":"FeatureCollection","features":[]});
+		window.map.clearLayer('selected');
 	}
 
 	window.map.setSelected = function (id,zoom) {
@@ -524,8 +523,7 @@ function mapboxClient( params ) {
 					type: "FeatureCollection",
 					features: [window.geojson['data'].features[feature]]
 				}
-
-				window.map.getSource('selected').setData(selected_feature);
+				window.map.addGeojson(selected_feature, 'selected');
 				if(zoom) {
 					window.map.jumpTo({center: window.geojson['data'].features[feature].geometry.coordinates, zoom: zoom});
 				}
