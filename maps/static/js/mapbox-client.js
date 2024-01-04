@@ -482,10 +482,17 @@ function mapboxClient( params ) {
 	function pointDecoder(point) {
 		let decoded_point=point;
 		if(typeof decoded_point === 'string') {
-			decoded_point=JSON.parse(decoded_point)
+			if(decoded_point.startsWith('POINT')) {
+				decoded_point=decoded_point.replace('POINT (','');
+				decoded_point=decoded_point.replace(')','');
+				decoded_point=decoded_point.split(' ');
+				decoded_point=[parseFloat(decoded_point[0]),parseFloat(decoded_point[1])];
+				return decoded_point;
+			} else {
+				decoded_point = JSON.parse(decoded_point)
+				return decoded_point.coordinates;
+			}
 		}
-		if(decoded_point.coordinates)
-			return decoded_point;
 		logDebug(`${point} does not seem valid`);
 	}
 	// External functions
@@ -504,7 +511,7 @@ function mapboxClient( params ) {
 
 	window.map.moveToPoint = function (point, zoom) {
 		point=pointDecoder(point);
-		window.map.flyTo({center: point.coordinates, zoom: zoom});
+		window.map.flyTo({center: point, zoom: zoom});
 	}
 
 	window.map.zoomToExtent = function () {
