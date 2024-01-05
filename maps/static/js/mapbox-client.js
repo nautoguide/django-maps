@@ -5,6 +5,7 @@ function mapboxClient( params ) {
 	let currentLocation = null;
 	let debug = false;
 	params.maxZoom = parseInt(params.maxZoom);
+	params.minZoom = parseInt(params.minZoom);
 	params.zoom = parseInt(params.zoom);
 	params.padding = parseInt(params.padding);
 
@@ -49,7 +50,7 @@ function mapboxClient( params ) {
 		container: 'map',
 		style: params.style,
 		maxZoom: params.maxZoom,
-		minZoom: 0,
+		minZoom: params.minZoom,
 		pitch: 0,
 		center: params.center,
 		zoom: params.zoom,
