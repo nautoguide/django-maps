@@ -10,6 +10,7 @@ def mapbox_simple(**kwargs):
     links = kwargs.get('links', False)
     location = kwargs.get('location', False)
     maxZoom = kwargs.get('maxZoom', 15)
+    minZoom = kwargs.get('minZoom', 1)
     query = kwargs.get('query', None)
     icons = kwargs.get('icons', [])
     center = kwargs.get('center', [-0.9307443, 50.7980974])
@@ -38,6 +39,7 @@ def mapbox_simple(**kwargs):
                                                                    'location': str(location),
                                                                    'allClick': str(allClick),
                                                                    'fit': str(fit),
+                                                                    'minZoom': minZoom,
                                                                    'zoom': str(zoom),
                                                                    'padding': str(padding),
                                                                    'fixedPrecision': fixedPrecision,
