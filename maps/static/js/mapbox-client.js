@@ -208,7 +208,7 @@ function mapboxClient( params ) {
 					}
 					if(params.fit === 'True') {
 						const bbox = turf.bbox(data);
-						window.map.fitBounds(bbox, {padding: 20, maxZoom: options.maxZoom})
+						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom})
 					}
 					if (params.location === 'True' && currentLocation) {
 						checkNearPoints(currentLocation[0], currentLocation[1]);
