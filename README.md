@@ -1,5 +1,10 @@
 # django-maps
 
+## Overview
+
+A django app to provide maps and map widgets for django projects. It uses mapbox and mapbox-gl-js to provide
+the maps and widgets.
+
 ## Install
 
 Local dev mode using built package

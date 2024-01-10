@@ -257,7 +257,9 @@ function mapboxClient( params ) {
 
 	function loadIcons(icons) {
 		icons.forEach((icon) => {
-			window.map.loadImage(icon.url+"?cacheblock=true", (error, image) => {
+			// Make a random uuid to use as the image name
+			const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+			window.map.loadImage(icon.url+"?cacheblock="+uuid, (error, image) => {
 				if (error) {
 					console.error('Error loading icon:', error);
 					return;
