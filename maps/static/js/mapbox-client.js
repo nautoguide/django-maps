@@ -38,6 +38,9 @@ function mapboxClient( params ) {
 	if(params.locationFunction!=='None') {
 		params.locationFunction=window[params.locationFunction];
 	}
+	if(params.locationErrorFunction!=='None') {
+		params.locationErrorFunction=window[params.locationErrorFunction];
+	}
 
 	let page=1;
 
@@ -157,17 +160,6 @@ function mapboxClient( params ) {
 				source: 'clusters',
 				filter: ['!=', 'cluster', true],
 				layout: {
-					// TODO NMRN fix
-					/*'icon-image': [
-						'match',
-						['get', 'category'], // Get the 'category' property from the feature
-						'ship', 'ship',
-						'homeport', 'homeport',
-						'memorial', 'memorial',
-						'school', 'school',
-						'submarine', 'submarine',
-						'sailor'
-					],*/
 					'icon-image': ['get', 'icon'],
 					'icon-size': 1, // Set the icon size
 					'icon-allow-overlap': true,
@@ -416,7 +408,9 @@ function mapboxClient( params ) {
 
 	function onPositionError(error) {
 		logDebug('Error:', error.message);
-
+		if (typeof params.locationErrorFunction === 'function') {
+			params.locationErrorFunction(error.message);
+		}
 	}
 
 	function enableLocation() {

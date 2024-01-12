@@ -19,6 +19,7 @@ def mapbox_simple(**kwargs):
     click_url = kwargs.get('click_url', None)
     clickFunction = kwargs.get('clickFunction', None)
     locationFunction = kwargs.get('locationFunction', None)
+    locationErrorFunction = kwargs.get('locationErrorFunction', None)
     nearFunction = kwargs.get('nearFunction', None)
     threshold = kwargs.get('threshold', 100)
     controls = kwargs.get('controls', True)
@@ -46,6 +47,7 @@ def mapbox_simple(**kwargs):
                                                                    'updateInterval': updateInterval,
                                                                    'clickFunction': str(clickFunction),
                                                                    'locationFunction': str(locationFunction),
+                                                                   'locationErrorFunction': str(locationErrorFunction),
                                                                    'nearFunction': str(nearFunction), 'threshold': threshold,
                                                                    'controls': str(controls), 'geojson': geojson}})
 
