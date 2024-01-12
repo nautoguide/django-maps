@@ -511,9 +511,11 @@ function mapboxClient( params ) {
 		window.map.flyTo({center: point, zoom: zoom});
 	}
 
-	window.map.zoomToExtent = function () {
-		const bbox = turf.bbox(window.geojson['data']);
-		window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom})
+	window.map.zoomToExtent = function (layer) {
+		layer=layer||'data';
+		const bbox = turf.bbox(window.geojson[layer]);
+		if(bbox[0]!==Infinity)
+			window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom})
 	}
 
 	window.map.clearSelected = function (id,zoom) {
