@@ -68,10 +68,9 @@ function mapboxClient( params ) {
 	}
 
 	const canvas = map.getCanvasContainer();
-
 	if(params.debug && params.debug==='True') {
-
 		console.log('*********************** MAP DEBUG ***********************')
+		console.log('Mapbox Client: ',params);
 		window.map.showCollisionBoxes = true;
 		window.map.showTileBoundaries = true;
 	}
@@ -178,6 +177,8 @@ function mapboxClient( params ) {
 			map.on('moveend', () => {
 				map.getSource('clusters').setData(getClusters());
 			});
+			// event for when the map is zoomed
+
 			if(params.json_url!=='None')
 				clusterLoader();
 
@@ -190,6 +191,13 @@ function mapboxClient( params ) {
 		}
 		process_queue();
 	});
+	if(params.debug && params.debug==='True') {
+		window.map.on('click', () => {
+			// Print the current map center and zoom
+			console.log('Center:', window.map.getCenter());
+			console.log('Zoom:', window.map.getZoom());
+		});
+	}
 
 	window.map.reload_data = function ()
 	{
