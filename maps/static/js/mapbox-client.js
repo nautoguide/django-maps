@@ -21,7 +21,6 @@ function mapboxClient( params ) {
 
 
 	let events=[];
-
 	const clusterIndex = new Supercluster({
 		radius: 50,
 		maxZoom: 12
@@ -43,7 +42,6 @@ function mapboxClient( params ) {
 	}
 
 	let page=1;
-
 	params.center=JSON.parse(params.center);
 
 	if (params.center && params.center.coordinates)
@@ -207,7 +205,7 @@ function mapboxClient( params ) {
 					}
 					if(params.fit === 'True') {
 						const bbox = turf.bbox(data);
-						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom})
+						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom, animate: false})
 					}
 					if (params.location === 'True' && currentLocation) {
 						checkNearPoints(currentLocation[0], currentLocation[1]);
