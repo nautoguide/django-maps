@@ -57,7 +57,7 @@ function mapboxClient( params ) {
 		zoom: params.zoom,
 		attributionControl: false,
 		clickTolerance: 1,
-		dragPan: true,
+		dragPan: true
 	}
 	if (params.query !== 'None')
 		params.json_url += '?' + params.query + '=' + document.getElementById(params.query).value;
@@ -68,6 +68,13 @@ function mapboxClient( params ) {
 	}
 
 	const canvas = map.getCanvasContainer();
+
+	if(params.debug && params.debug==='True') {
+
+		console.log('*********************** MAP DEBUG ***********************')
+		window.map.showCollisionBoxes = true;
+		window.map.showTileBoundaries = true;
+	}
 
 
 	window.map.on('load', function () {
