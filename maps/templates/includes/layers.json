@@ -1,0 +1,176 @@
+{
+  "id": "data-circles",
+  "type": "circle",
+  "source": "data",
+  "paint": {
+    "circle-radius": {
+      "base": 1.75,
+      "stops": [
+        [12, 2],
+        [22, 180]
+      ]
+    },
+    "circle-color": [
+      "case",
+      ["has", "color"],
+      ["match",
+        ["get", "color"],
+        1,
+        "rgba(0, 255, 0, 0.5)",
+        2,
+        "rgba(255, 0, 0, 0.5)",
+        3,
+        "rgba(0, 0, 255, 0.5)",
+        "rgba(0, 0, 0, 0)"
+      ],
+      "rgba(0, 0, 0, 0)"
+    ]
+  }
+},
+{
+"id": "location",
+"type": "symbol",
+"source": "location",
+"layout": {
+"icon-image": "Location",
+"icon-size": 1,
+"icon-allow-overlap": true,
+"icon-anchor": "bottom",
+"icon-offset": [0, 0]
+},
+"paint": {
+"icon-opacity": 1
+}
+},
+{
+"id": "lines-between-features",
+"type": "line",
+"source": "line-source",
+"paint": {
+"line-color": "#F9AA33",
+"line-width": 5,
+"line-opacity": 0.2
+}
+},
+{
+"id": "lines-strings",
+"type": "line",
+"source": "lines-strings",
+"paint": {
+"line-color": ["coalesce", ["get", "colour"], "#FF3333"],
+"line-width": ["interpolate",["exponential", 2],["zoom"],10,["coalesce", ["get", "width_min"], 6],20,["coalesce", ["get", "width_max"], 20]],
+"line-opacity": ["coalesce", ["get", "opacity"], 0.75]
+},
+"layout": {
+"line-cap": "round",
+"line-join": "round"
+}
+},
+{
+"id": "data",
+"type": "symbol",
+"source": "data",
+"layout": {
+"icon-image": "{icon}",
+"icon-size": 1,
+"icon-allow-overlap": true,
+"icon-anchor": "bottom",
+"icon-offset": [0, 0]
+},
+"paint": {
+"icon-opacity": 1
+}
+},
+{
+"id": "selected",
+"type": "symbol",
+"source": "selected",
+"layout": {
+"icon-image": [
+"coalesce",
+["get", "icon"]
+],
+"icon-size": 1.2,
+"icon-allow-overlap": true,
+"icon-anchor": "bottom",
+"icon-offset": [0, 0]
+},
+"paint": {
+"icon-opacity": 1
+}
+},
+{
+"id": "draw-end-points-inner",
+"type": "circle",
+"source": "draw-end-points",
+"paint": {
+"circle-radius": 14,
+"circle-color": "#000"
+}
+},
+{
+"id": "draw-end-points",
+"type": "circle",
+"source": "draw-end-points",
+"paint": {
+"circle-radius": 12,
+"circle-color": "#D20C0C"
+}
+},
+{
+"id": "draw-mid-points-inner",
+"type": "circle",
+"source": "draw-mid-points",
+"paint": {
+"circle-radius": 14,
+"circle-color": "#000"
+}
+},
+{
+"id": "draw-mid-points",
+"type": "circle",
+"source": "draw-mid-points",
+"paint": {
+"circle-radius": 12,
+"circle-color": "#EA580C"
+}
+},
+{
+"id": "draw-vertex-outer",
+"type": "line",
+"source": "draw-vertex",
+"layout": {
+"line-cap": "round",
+"line-join": "round"
+},
+"paint": {
+"line-color": "#000",
+"line-width": 10
+}
+},
+{
+"id": "draw-vertex",
+"type": "line",
+"source": "draw-vertex",
+"layout": {
+"line-cap": "round",
+"line-join": "round"
+},
+"paint": {
+"line-color": "#FFF",
+"line-width": 8
+}
+},
+{
+"id": "draw-vertex-direction",
+"type": "symbol",
+"source": "draw-vertex",
+"layout": {
+"symbol-placement": "line",
+"icon-image": "OS/CartographicSymbol/Direction Of Flow Symbol",
+"icon-rotation-alignment": "map",
+"icon-allow-overlap": true,
+"icon-rotate": 180,
+"icon-ignore-placement": true
+}
+}

@@ -1,0 +1,56 @@
+"data": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"lines-strings": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"location": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"line-source": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"selected": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"draw-end-points": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"draw-mid-points": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+},
+"draw-vertex": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
+}
