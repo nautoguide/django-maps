@@ -57,7 +57,8 @@ function mapboxClient( params ) {
 		zoom: params.zoom,
 		attributionControl: false,
 		clickTolerance: 1,
-		dragPan: true
+		dragPan: true,
+		selected: 'False'
 	}
 	if (params.query !== 'None')
 		params.json_url += '?' + params.query + '=' + document.getElementById(params.query).value;
@@ -205,7 +206,8 @@ function mapboxClient( params ) {
 			fetch(params.json_url)
 				.then(response => response.json())
 				.then(data => {
-					window.geojson['data'] = data;
+					window.map.addGeojson(data);
+					/*window.geojson['data'] = data;
 					window.map.getSource('data').setData(data);
 					if (params.links === 'True') {
 						const lineSource = createLineSource(data.features);
@@ -217,7 +219,7 @@ function mapboxClient( params ) {
 					}
 					if (params.location === 'True' && currentLocation) {
 						checkNearPoints(currentLocation[0], currentLocation[1]);
-					}
+					}*/
 				})
 				.catch(error => console.error(error));
 		}
@@ -537,7 +539,10 @@ function mapboxClient( params ) {
 
 	window.map.setSelected = function (id,zoom) {
 		for (let feature in window.geojson['data'].features) {
-			if (window.geojson['data'].features[feature].properties.id === id) {
+			// Find the feature with the matching id but its not typed
+			if (window.geojson['data'].features[feature].properties.id == id) {
+				params.selected='False';
+
 				let selected_feature = {
 					type: "FeatureCollection",
 					features: [window.geojson['data'].features[feature]]
@@ -834,6 +839,9 @@ function mapboxClient( params ) {
 						if (params.location === 'True' && currentLocation) {
 							checkNearPoints(currentLocation[0], currentLocation[1]);
 						}
+					}
+					if(params.selected!=='False') {
+						window.map.setSelected(params.selected,14);
 					}
 				}
 			}
