@@ -32,6 +32,7 @@ def mapbox_simple(**kwargs):
     updateInterval = kwargs.get('updateInterval', 10)
     fit = kwargs.get('fit', True)
     debug = kwargs.get('debug', False)
+    selected = kwargs.get('selected', False)
 
     return render_to_string('mapbox_simple_map_insert.html', {'params':
                                                                   {'links': str(links), 'json_url': str(json_url), 'query': str(query),
@@ -42,6 +43,7 @@ def mapbox_simple(**kwargs):
                                                                    'allClick': str(allClick),
                                                                    'fit': str(fit),
                                                                     'debug': str(debug),
+                                                                    'selected': str(selected),
                                                                     'minZoom': minZoom,
                                                                    'zoom': str(zoom),
                                                                    'padding': str(padding),
