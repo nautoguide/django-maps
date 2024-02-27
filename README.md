@@ -2,8 +2,29 @@
 
 ## Overview
 
-A django app to provide maps and map widgets for django projects. It uses mapbox and mapbox-gl-js to provide
-the maps and widgets.
+A django app to provide maps and map widgets for django projects. It uses mapbox-libre to provide
+the maps and widgets for various map styles and features.
+
+It was written to replace to standard django admin map widget and later to provide a more flexible solution for the 
+client side maps in various of our projects @ [nautoguide](https://nautoguide.com)
+
+You can see examples of the maps in action at [geovey](https://geovey.co.uk) , [brixham steps](https://brixhamwalks.org/)
+
+![client-map.png](docs%2Fimages%2Fclient-map.png)
+
+![admin-map.png](docs%2Fimages%2Fadmin-map.png)
+
+## Roadmap
+
+Currently the app is in a beta state and is being used in production on a number of projects. The roadmap is to stablise
+the features and then improve the documentation and testing. At that point I will rewrite the javascript to use a class
+based approach as the current code is a bit of a mess due to the evolution of the project.
+
+## Support
+
+If you need help or support then please raise an issue on the github project page. Always happy to help and improve the
+project. We will always consider new features and improvements and are happy to take pull requests or paid work to add
+features at speed.
 
 ## Install
 
