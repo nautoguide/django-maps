@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "declaration": true
+  },
+  "include": ["maps/static/js/*.ts"],
+}

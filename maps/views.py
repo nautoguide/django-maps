@@ -12,10 +12,13 @@ def mapfiles(request):
     if request.scheme == 'https' or request.META.get('HTTP_X_FORWARDED_PROTO') == 'https' or request.META.get(
             'X_FORWARDED_PROTO') == 'https':
         scheme = 'https'
+    api_key = None
+    if hasattr(settings, 'MAP_API_KEY'):
+        api_key = settings.MAP_API_KEY
     context = {
         'host': host,
         'scheme': scheme,
-        'MAP_API_KEY': settings.MAP_API_KEY,
+        'MAP_API_KEY': api_key,
 
     }
     file_actual = f'map_styles/{file}'
