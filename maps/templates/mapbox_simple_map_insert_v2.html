@@ -1,0 +1,8 @@
+{% block head %}
+    <script type="module" src="/static/dist/mapbox-client-v2.js"></script>
+    <link href='/static/css/maplibre-gl.css' rel='stylesheet'/>
+{% endblock %}
+
+{% block body %}
+    <div id="map" class="{{ cssClass }}" data-params="{{ params }}"></div>
+{% endblock %}
