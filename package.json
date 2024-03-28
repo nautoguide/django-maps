@@ -12,7 +12,7 @@
       "source": [
         "maps/static/js/mapbox-client-v2.ts"
       ],
-      "distDir": "maps/static/dist"
+      "distDir": "maps/static/js"
     }
   },
   "scripts": {
