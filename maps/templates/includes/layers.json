@@ -173,4 +173,38 @@
 "icon-rotate": 180,
 "icon-ignore-placement": true
 }
+},
+{
+"id": "polygon-area",
+"type": "fill",
+"source": "polygon-area",
+"layout": {},
+"paint": {
+"fill-color": "#000000",
+"fill-opacity": 0.1
+}
+},
+{
+"id": "polygon-area-outline",
+"type": "line",
+"source": "polygon-area",
+"layout": {},
+"paint": {
+"line-color": "#000000",
+"line-width": 2
+}
+},
+{
+"id": "data-line-strings",
+"type": "line",
+"source": "data",
+"paint": {
+"line-color": ["coalesce", ["get", "colour"], "#FF3333"],
+"line-width": ["interpolate",["exponential", 2],["zoom"],10,["coalesce", ["get", "width_min"], 6],20,["coalesce", ["get", "width_max"], 20]],
+"line-opacity": ["coalesce", ["get", "opacity"], 0.75]
+},
+"layout": {
+"line-cap": "round",
+"line-join": "round"
+}
 }

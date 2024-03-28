@@ -53,4 +53,11 @@
 "type": "FeatureCollection",
 "features": []
 }
+},
+"polygon-area": {
+"type": "geojson",
+"data": {
+"type": "FeatureCollection",
+"features": []
+}
 }
