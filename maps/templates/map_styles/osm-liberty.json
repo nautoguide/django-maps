@@ -3,6 +3,10 @@
   "name": "OSM Liberty",
   "metadata": {
   },
+  "includes": [
+    "includes/sources.json",
+    "includes/layers.json"
+  ],
   "sources": {
     "openmaptiles": {
       "type": "vector",
@@ -16,8 +20,7 @@
         "https://klokantech.github.io/naturalearthtiles/tiles/natural_earth_2_shaded_relief.raster/{z}/{x}/{y}.png"
       ],
       "type": "raster"
-    },
-    {% include "includes/sources.json" %}
+    }
   },
   "sprite": "https://maputnik.github.io/osm-liberty/sprites/osm-liberty",
   "glyphs": "https://orangemug.github.io/font-glyphs/glyphs/{fontstack}/{range}.pbf",
@@ -1736,8 +1739,7 @@
         "text-halo-color": "rgba(255,255,255,0.7)",
         "text-halo-width": 1
       }
-    },
-{% include "includes/layers.json" %}
+    }
   ],
   "id": "osm-liberty"
 }

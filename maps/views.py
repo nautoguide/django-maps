@@ -24,7 +24,22 @@ def mapfiles(request):
     file_actual = f'map_styles/{file}'
 
     rendered_template = render(request, file_actual, context)
-
     json_data = json.loads(rendered_template.content.decode())
+
+    # Load json file from the includes
+    for include in json_data.get('includes', []):
+        file_actual = f'{include}'
+        rendered_template = render(request, file_actual, context)
+        json_data_include = json.loads(rendered_template.content.decode())
+        # Merge the json data
+        if json_data_include.get('sources'):
+            json_data.get('sources').update(json_data_include.get('sources'))
+        if json_data_include.get('layers'):
+            json_data.get('layers').extend(json_data_include.get('layers'))
+
+
+    # delete includes
+    if json_data.get('includes'):
+        del json_data['includes']
 
     return JsonResponse(json_data)

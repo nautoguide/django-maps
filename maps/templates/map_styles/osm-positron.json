@@ -3,13 +3,16 @@
   "name": "Positron",
   "metadata": {
   },
+  "includes": [
+    "includes/sources.json",
+    "includes/layers.json"
+  ],
   "sources": {
     "openmaptiles": {
       "type": "vector",
       "tiles": ["https://geovey.co.uk/tiles/osm/{z}/{x}/{y}.pbf"],
       "maxzoom": 14
-    },
-    {% include "includes/sources.json" %}
+    }
   },
   "sprite": "https://geovey.co.uk/tiles/style/osm/sprite",
   "glyphs": "https://geovey.co.uk/tiles/fonts/osm/{fontstack}/{range}.pbf",
@@ -1098,8 +1101,7 @@
         "text-halo-color": "rgba(236,236,234,0.7)",
         "text-halo-width": 1.4
       }
-    },
-        {% include "includes/layers.json" %}
+    }
   ],
   "id": "positron"
 }

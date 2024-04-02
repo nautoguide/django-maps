@@ -3,6 +3,10 @@
     "name": "OS Open Zoomstack - Light",
     "metadata": {
     },
+    "includes": [
+        "includes/sources.json",
+        "includes/layers.json"
+    ],
     "center": [0, 0],
     "zoom": 1,
     "bearing": 0,
@@ -13,8 +17,7 @@
       "type": "vector",
       "tiles": ["https://geovey.co.uk/tiles/os/{z}/{x}/{y}.pbf"],
       "maxzoom": 14
-    },
-      {% include "includes/sources.json" %}
+    }
     },
     "sprite": "https://geovey.co.uk/tiles/sprites/os/sprites",
     "glyphs": "https://geovey.co.uk/tiles/fonts/os/{fontstack}/{range}.pbf",
@@ -2565,8 +2568,7 @@
                 "text-halo-blur": 1,
                 "text-opacity": 0.35
             }
-        },
-        {% include "includes/layers.json" %}
+        }
     ],
     "created": "2019-01-18T21:07:08.282Z",
     "id": "cjr2jbmg63wtu2rp9uyq82fkb",
