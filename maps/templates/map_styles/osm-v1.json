@@ -1,5 +1,9 @@
 {
   "version": 8,
+  "includes": [
+    "includes/sources.json",
+    "includes/layers.json"
+  ],
   "name": "OSM OpenMapTiles",
   "id": "openmaptiles",
   "center": [
@@ -18,8 +22,7 @@
     "attribution": {
       "attribution": "<a href=\"https://www.openmaptiles.org/\" target=\"_blank\">&copy; OpenMapTiles</a> <a href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\">&copy; OpenStreetMap contributors</a>",
       "type": "vector"
-    },
-  {% include "includes/sources.json" %}
+    }
 
 },
   "glyphs": "https://geovey.co.uk/tiles/fonts/osm/{fontstack}/{range}.pbf",
@@ -12396,8 +12399,6 @@
           "iso_a2"
         ]
       ]
-    },
-    {% include "includes/layers.json" %}
-
+    }
   ]
 }

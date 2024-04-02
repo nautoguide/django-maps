@@ -1,4 +1,8 @@
 {
+  "includes": [
+    "includes/sources.json",
+    "includes/layers.json"
+  ],
   "version": 8,
   "sprite": "{{ scheme }}://{{ host }}/static/sprites/sprite",
   "glyphs": "https://api.os.uk/maps/vector/v1/vts/resources/fonts/{fontstack}/{range}.pbf?key={{ MAP_API_KEY }}",
@@ -7,8 +11,7 @@
       "type": "vector",
       "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts.json",
       "attribution": "Contains OS data © Crown copyright and database right 2023"
-    },
-    {% include "includes/sources.json" %}
+    }
   },
   "layers": [
     {
@@ -10927,8 +10930,6 @@
         "text-halo-color": "#FAFAF3",
         "text-halo-width": 1.5
       }
-    },
-{% include "includes/layers.json" %}
-
+    }
   ]
 }
