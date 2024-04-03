@@ -650,25 +650,6 @@ function mapboxClient( params ) {
 			map.off('touchmove', onMove);
 		}
 
-		map.on('mouseenter', 'draw-end-points', () => {
-			map.setPaintProperty('draw-end-points', 'circle-color', '#3bb2d0');
-			canvas.style.cursor = 'move';
-		});
-
-		map.on('mouseleave', 'draw-end-points', () => {
-			map.setPaintProperty('draw-end-points', 'circle-color', '#D20C0C');
-			canvas.style.cursor = '';
-		});
-
-		map.on('mouseenter', 'draw-mid-points', () => {
-			map.setPaintProperty('draw-mid-points', 'circle-color', '#3bb2d0');
-			canvas.style.cursor = 'grab';
-		});
-
-		map.on('mouseleave', 'draw-mid-points', () => {
-			map.setPaintProperty('draw-mid-points', 'circle-color', '#EA580C');
-			canvas.style.cursor = '';
-		});
 
 		map.on('mousedown', 'draw-end-points', (e) => {
 			e.preventDefault();
