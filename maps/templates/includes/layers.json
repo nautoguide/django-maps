@@ -288,8 +288,8 @@
       "type": "symbol",
       "source": "draw-vertex",
       "layout": {
-        "symbol-placement": "line",
-        "icon-image": "OS/CartographicSymbol/Direction Of Flow Symbol",
+        "symbol-placement": "line-center",
+        "icon-image": "OS/CartographicSymbol/Road Related Flow Symbol",
         "icon-rotation-alignment": "map",
         "icon-allow-overlap": true,
         "icon-rotate": 180,

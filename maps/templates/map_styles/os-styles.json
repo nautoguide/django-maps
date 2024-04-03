@@ -1,6 +1,6 @@
 {
   "version": 8,
-  "sprite": "{{ scheme }}://{{ host }}/static/sprites/sprite",
+  "sprite": "{{ scheme }}://{{ host }}/tiles/sprites/os/sprite",
   "glyphs": "https://api.os.uk/maps/vector/v1/vts/resources/fonts/{fontstack}/{range}.pbf?key={{ MAP_API_KEY }}",
   "sources": {
     "esri": {
