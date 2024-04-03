@@ -221,42 +221,6 @@
       }
     },
     {
-      "id": "draw-end-points-inner",
-      "type": "circle",
-      "source": "draw-end-points",
-      "paint": {
-        "circle-radius": 14,
-        "circle-color": "#000"
-      }
-    },
-    {
-      "id": "draw-end-points",
-      "type": "circle",
-      "source": "draw-end-points",
-      "paint": {
-        "circle-radius": 12,
-        "circle-color": "#D20C0C"
-      }
-    },
-    {
-      "id": "draw-mid-points-inner",
-      "type": "circle",
-      "source": "draw-mid-points",
-      "paint": {
-        "circle-radius": 14,
-        "circle-color": "#000"
-      }
-    },
-    {
-      "id": "draw-mid-points",
-      "type": "circle",
-      "source": "draw-mid-points",
-      "paint": {
-        "circle-radius": 12,
-        "circle-color": "#EA580C"
-      }
-    },
-    {
       "id": "draw-vertex-outer",
       "type": "line",
       "source": "draw-vertex",
@@ -280,6 +244,43 @@
       "paint": {
         "line-color": "#FFF",
         "line-width": 8
+      }
+    },
+    {
+      "id": "draw-end-points-inner",
+      "type": "circle",
+      "source": "draw-end-points",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#000"
+      }
+    },
+    {
+      "id": "draw-end-points",
+      "type": "circle",
+      "source": "draw-end-points",
+      "paint": {
+        "circle-radius": 8,
+        "circle-color": "#D20C0C"
+      }
+    },
+    {
+      "id": "draw-mid-points-inner",
+      "type": "circle",
+      "source": "draw-mid-points",
+      "paint": {
+        "circle-radius": 8,
+        "circle-color": "#000",
+        "circle-opacity": 0.9
+      }
+    },
+    {
+      "id": "draw-mid-points",
+      "type": "circle",
+      "source": "draw-mid-points",
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": "#FFF"
       }
     },
     {
