@@ -96,6 +96,8 @@ class DjangoMapboxClient {
     draw_point_mode= "add";
     draw_actual_points: any[] =[];
 
+    moving_point: any=null;
+
 
     constructor() {
 
@@ -246,7 +248,7 @@ class DjangoMapboxClient {
 
     // private methods
 
-    _fuzzyMatch(point1: number,point2: number,precision: number) {
+    _fuzzyMatch(point1: number,point2: number,precision?: number) {
         precision=precision||0.0001;
         //console.log(`points: ${point1}:${point2} diff: ${point1-point2} - precision: ${precision}`);
         if(point1===point2&&point1===point2)
@@ -299,18 +301,18 @@ class DjangoMapboxClient {
     }
 
     _LineDrawMode(operation?: QueueOperation) {
-        let moving_point: string=null;
+
 
         let self = this;
-
+        this.moving_point=null;
 
         this.map.getSource("draw-end-points").setData({"type":"FeatureCollection","features":[]});
         this.geojson["draw-end-points"] = {"type":"FeatureCollection","features":[]};
 
         function onMove(e: Event) {
             const coords = e.lngLat;
-            self.draw_actual_points[moving_point]=[coords.lng, coords.lat];
-            //_drawLine();
+            self.draw_actual_points[self.moving_point]=[coords.lng, coords.lat];
+            self._drawLine();
             self.canvas.style.cursor = 'grabbing';
         }
 
@@ -320,31 +322,11 @@ class DjangoMapboxClient {
             self.map.off('touchmove', onMove);
         }
 
-        this.map.on('mouseenter', 'draw-end-points', () => {
-            self.map.setPaintProperty('draw-end-points', 'circle-color', '#3bb2d0');
-            self.canvas.style.cursor = 'move';
-        });
-
-        this.map.on('mouseleave', 'draw-end-points', () => {
-            self.map.setPaintProperty('draw-end-points', 'circle-color', '#D20C0C');
-            self.canvas.style.cursor = '';
-        });
-
-        this.map.on('mouseenter', 'draw-mid-points', () => {
-            self.map.setPaintProperty('draw-mid-points', 'circle-color', '#3bb2d0');
-            self.canvas.style.cursor = 'grab';
-        });
-
-        this.map.on('mouseleave', 'draw-mid-points', () => {
-            self.map.setPaintProperty('draw-mid-points', 'circle-color', '#EA580C');
-            self.canvas.style.cursor = '';
-        });
-
         this.map.on('mousedown', 'draw-end-points', (e) => {
             e.preventDefault();
             if(e.originalEvent.which===1) {
                 // left click
-                moving_point = e.features[0].properties.actual_index;
+                self.moving_point = e.features[0].properties.actual_index;
                 self.canvas.style.cursor = 'grab';
                 self.map.on('mousemove', onMove);
                 self.map.once('mouseup', onUp);
@@ -362,7 +344,7 @@ class DjangoMapboxClient {
                 // add a new point at the midpoint in the array
                 self.draw_actual_points.splice(e.features[0].properties.actual_index + 1, 0, [e.lngLat.lng, e.lngLat.lat]);
                 self._drawLine();
-                moving_point = e.features[0].properties.actual_index + 1;
+                self.moving_point = e.features[0].properties.actual_index + 1;
                 self.canvas.style.cursor = 'grab';
                 self.map.on('mousemove', onMove);
                 self.map.once('mouseup', onUp);
@@ -386,7 +368,7 @@ class DjangoMapboxClient {
         }
 
 
-        function addPoint(e) {
+        function addPoint(e: Event) {
             let point = [e.lngLat.lng, e.lngLat.lat];
             const features = self.map.queryRenderedFeatures(e.point, {layers: ['draw-end-points']});
 
@@ -419,6 +401,11 @@ class DjangoMapboxClient {
         window.map.clickEvent({"hook":addPoint})
     }
 
+    LineDrawUndo() {
+        if(this.draw_actual_points.length>0)
+            this.draw_actual_points.pop();
+        this._drawLine();
+    }
 
     // Public Methods
 
