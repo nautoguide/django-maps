@@ -2613,19 +2613,19 @@
                     "match",
                     ["get", "type"],
                     ["Railway Station"],
-                    "RS",
+                    "OS/Railway_stations/Railway Station And London Underground Statio",
                     ["London Underground Station"],
-                    "UG",
+                    "OS/Railway_stations/London Underground Station",
                     ["Light Rapid Transit Station"],
-                    "LRTS",
+                    "OS/Railway_stations/Light Rapid Transit Station",
                     [
                         "Light Rapid Transit Station And London Underground Station"
                     ],
-                    "LRTS-UG",
+                    "OS/Railway_stations/Light Rapid Transit Station And London Underground Station",
                     ["Light Rapid Transit Station And Railway Station"],
-                    "RS-LRTS",
+                    "OS/Railway_stations/Light Rapid Transit Station And Railway Station",
                     ["Railway Station And London Underground Station"],
-                    "RS-UG",
+                    "OS/Railway_stations/Railway Station And London Underground Station",
                     ""
                 ],
                 "text-font": ["Source Sans Pro Regular"],
@@ -2674,7 +2674,7 @@
             "source": "composite",
             "source-layer": "airports",
             "layout": {
-                "icon-image": "Airport",
+                "icon-image": "OS/Airports",
                 "icon-size": [
                     "interpolate",
                     ["linear"],

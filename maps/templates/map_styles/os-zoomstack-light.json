@@ -2270,19 +2270,19 @@
                     "match",
                     ["get", "type"],
                     ["Railway Station"],
-                    "RS",
+                    "OS/Railway_stations/Railway Station And London Underground Statio",
                     ["London Underground Station"],
-                    "UG",
+                    "OS/Railway_stations/London Underground Station",
                     ["Light Rapid Transit Station"],
-                    "LRTS",
+                    "OS/Railway_stations/Light Rapid Transit Station",
                     [
                         "Light Rapid Transit Station And London Underground Station"
                     ],
-                    "LRTS-UG",
+                    "OS/Railway_stations/Light Rapid Transit Station And London Underground Station",
                     ["Light Rapid Transit Station And Railway Station"],
-                    "RS-LRTS",
+                    "OS/Railway_stations/Light Rapid Transit Station And Railway Station",
                     ["Railway Station And London Underground Station"],
-                    "RS-UG",
+                    "OS/Railway_stations/Railway Station And London Underground Station",
                     ""
                 ],
                 "text-font": ["Source Sans Pro Regular"],
@@ -2330,7 +2330,7 @@
             "type": "symbol",
             "metadata": {"mapbox:group": "e196265c0e550aaddd2885dc32fdb674"},
             "source": "composite",
-            "source-layer": "airports",
+            "source-layer": "OS/Airports",
             "layout": {
                 "icon-image": "Airport",
                 "icon-size": [
