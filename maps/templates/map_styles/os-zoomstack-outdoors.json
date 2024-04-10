@@ -18,7 +18,7 @@
              "maxzoom": 14
     }
     },
-    "sprite": "https://geovey.co.uk/tiles/sprites/os/sprites",
+    "sprite": "https://geovey.co.uk/tiles/sprites/os/sprite",
     "glyphs": "https://geovey.co.uk/tiles/fonts/os/{fontstack}/{range}.pbf",
     "layers": [
         {
