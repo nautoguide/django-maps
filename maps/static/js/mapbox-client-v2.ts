@@ -398,7 +398,7 @@ class DjangoMapboxClient {
                 }
             }
         }
-        window.map.clickEvent({"hook":addPoint})
+        window.map.clickEvent({"hook":addPoint,"clear":true});
     }
 
     LineDrawUndo() {
@@ -444,11 +444,6 @@ class DjangoMapboxClient {
     }
 
     clickEvent(eventOption: eventOptions): void {
-        const {
-            hook = null,
-            layer = 'data',
-            clear = true
-        } = eventOption;
         this.addQueueOperation({
             type: 'add_event',
             layer_name: eventOption.layer,
