@@ -806,6 +806,11 @@ function mapboxClient( params ) {
 		_drawLine();
 	}
 
+	// Update param function
+	window.map.updateParam = function (key, value) {
+		params[key] = value;
+	}
+
 	function process_queue() {
 		if(loaded&&queue.length>0) {
 			if(params.cluster==='True') {

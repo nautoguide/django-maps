@@ -423,6 +423,26 @@
         "line-cap": "round",
         "line-join": "round"
       }
+    },
+    {
+      "id": "text-labels",
+      "type": "symbol",
+      "source": "data",
+      "filter": ["has", "label"],
+      "layout": {
+        "text-field": "{label}",
+        "text-font": ["Arial Regular"],
+        "text-ignore-placement": true,
+        "text-allow-overlap": true,
+        "text-padding": 10,
+        "symbol-spacing": 250,
+        "text-size": 12
+      },
+      "paint": {
+        "text-color": "#000000",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 2
+      }
     }
   ]
 }
