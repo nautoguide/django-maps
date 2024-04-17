@@ -21,8 +21,8 @@ interface Feature {
         type: string;
         coordinates: number[];
     };
-    properties: {
-        [key: string]: string;
+    properties?: {
+        [key: string]: any;
     };
 }
 
@@ -46,7 +46,7 @@ interface Icon {
 
 // Queue Operation
 interface QueueOperation {
-    type: "add_layer" | "remove_layer" | "add_geojson" | "clear_layer" | "set_visibility" | "add_event" | "resize" | "line_draw" | "set_center";
+    type: "add_layer" | "remove_layer" | "add_geojson" | "clear_layer" | "set_visibility" | "add_event" | "resize" | "line_draw" | "set_center" | "delete_feature";
     layer_name?: string; // This makes layer_name optional
     data?: GeoJSON;
     url?: string;
@@ -76,7 +76,10 @@ interface eventOptions {
     layer?: string;
     clear?: boolean;
     add_point?: boolean;
+    hook_actual?: Function;
 }
+
+const defaultLayers = ["data"];
 
 // Mapbox Client
 class DjangoMapboxClient {
@@ -113,6 +116,11 @@ class DjangoMapboxClient {
             minZoom: this.options.minZoom,
             maxZoom: this.options.maxZoom
         });
+
+        // Setup default layers geojson
+        for(let layer in defaultLayers) {
+            this.geojson[defaultLayers[layer]] = {"type":"FeatureCollection","features":[]};
+        }
 
         if (this.options.controls === true) {
             this.map.addControl(new NavigationControl());
@@ -179,8 +187,8 @@ class DjangoMapboxClient {
         }
     }
 
-    addGeojson(data: GeoJSON, layer_name: string = 'data', fit: boolean = false) {
-        this.addQueueOperation({type: 'add_geojson', data: data, layer_name: layer_name, toggle: fit});
+    addGeojson(data: GeoJSON, layer_name: string = 'data', fit: boolean = false, values?:{}) {
+        this.addQueueOperation({type: 'add_geojson', data: data, layer_name: layer_name, toggle: fit, values:values});
     }
 
     addQueueOperation(operation: QueueOperation) {
@@ -189,6 +197,8 @@ class DjangoMapboxClient {
     }
 
     processQueue(): void {
+        let source;
+
         if (this.loaded === true && this.queue.length > 0) {
             console.log(`Processing Queue ${this.queue.length} items left ${this.loaded}`);
             let operation = this.queue.shift();
@@ -199,10 +209,36 @@ class DjangoMapboxClient {
                 case 'set_center':
                     this.map.setCenter(operation.values);
                     break;
+                case 'delete_feature':
+                    source=this.map.getSource(operation.layer_name);
+                    if(this.geojson[operation.layer_name]) {
+                        let data = this.geojson[operation.layer_name]
+                        let features = data.features;
+                        for (let i in features) {
+                            if (features[i].properties && features[i].properties.id && features[i].properties.id === operation.values.id) {
+                                features.splice(i, 1);
+                                break;
+                            }
+                        }
+                        source.setData(data);
+                    }
+                    break;
+
                 case 'add_geojson':
-                    const source=this.map.getSource(operation.layer_name);
-                    source.setData(operation.data);
-                    this.geojson[operation.layer_name] = operation.data;
+                    source=this.map.getSource(operation.layer_name);
+                    if(operation.values&&operation.values['merge']===true&&this.geojson[operation.layer_name]) {
+                        // Merge the data
+                        let new_data = operation.data;
+                        let old_data = this.geojson[operation.layer_name]
+                        for(let i in new_data.features) {
+                            old_data.features.push(new_data.features[i]);
+                        }
+                        source.setData(old_data);
+                        this.geojson[operation.layer_name] = old_data;
+                    } else {
+                        source.setData(operation.data);
+                        this.geojson[operation.layer_name] = operation.data;
+                    }
                     if (this.geojson[operation.layer_name].features.length > 0) {
                         if(operation.toggle === true) {
                             const bbox = turf.bbox(this.geojson[operation.layer_name]);
@@ -228,11 +264,12 @@ class DjangoMapboxClient {
 
                     if (operation.toggle === true) {
                         for (let i in this.events) {
-                            this.map.off('click', this.events[i].hook);
+                            this.map.off('click', this.events[i].hook_actual);
                         }
                         this.events = [];
                     }
-                    this.map.on('click', operation.hook);
+                    operation.hook_actual = callback;
+                    this.map.on('click', callback);
                     this.events.push(operation);
                     break;
                 case 'resize':
@@ -290,7 +327,7 @@ class DjangoMapboxClient {
             this.geojson["draw-mid-points"].features.push({
                 "type": "Feature",
                 "geometry": {"coordinates": [mid_point[0],mid_point[1]], "type": "Point"},
-                "properties": {"actual_index": i }
+                "properties": { "actual_index": i }
             });
         }
 
@@ -368,8 +405,7 @@ class DjangoMapboxClient {
         }
 
 
-        function addPoint(e: Event) {
-            let point = [e.lngLat.lng, e.lngLat.lat];
+        function addPoint(point: any[],e: Event) {
             const features = self.map.queryRenderedFeatures(e.point, {layers: ['draw-end-points']});
 
             if(self.draw_point_mode==="add") {
@@ -401,39 +437,96 @@ class DjangoMapboxClient {
         window.map.clickEvent({"hook":addPoint,"clear":true});
     }
 
+    // Public Methods
+
+
+    /**
+     * Undo the last point drawn
+     * @constructor
+     */
     LineDrawUndo() {
         if(this.draw_actual_points.length>0)
             this.draw_actual_points.pop();
         this._drawLine();
     }
 
-    // Public Methods
 
+    /**
+     * Line Draw Mode enable
+     * @param layer_name - the layer name to draw on
+     * @param toggle - enable or disable
+     * @constructor
+     */
     LineDrawMode(layer_name: string, toggle: boolean = true) {
         this.addQueueOperation({type: 'line_draw', layer_name: layer_name, toggle: toggle});
     }
 
+    /**
+     * Set the visibility of a layer
+     * @param layer_name
+     * @param visibility
+     */
     setLayerVisibility(layer_name: string, visibility: string) {
         this.addQueueOperation({type: 'set_visibility', layer_name: layer_name, values: {visibility: visibility}});
     }
 
+    /**
+     * Set the center of the map
+     * @param center
+     */
     setCenter(center: [number, number]) {
         this.addQueueOperation({type: 'set_center', values: center});
     }
 
-    getCenter() {
+    /**
+     * Delete a feature from a layer using the feature id
+     * @param layer_name
+     * @param feature_id
+     */
+    deleteFeature(layer_name: string, feature_id: string) {
+        this.addQueueOperation({type: 'delete_feature', layer_name: layer_name, values: {id: feature_id}});
+    }
+
+    /**
+     * Get a layer as a geojson object
+     * @param layer_name
+     * @return {GeoJSON}
+     */
+    getGeojsonLayer(layer_name: string) {
+        return this.geojson[layer_name];
+    }
+
+    /**
+     * Merge two geojson objects
+     * @param data1
+     * @param data2
+     * @return {GeoJSON}
+     */
+    mergeGeojson(data1: GeoJSON, data2: GeoJSON): GeoJSON {
+        let features = data1.features.concat(data2.features);
+        return {
+            type: "FeatureCollection",
+            features: features
+        };
+    }
+
+    /**
+     * Get the center of the map
+     * @return {number[]}
+     */
+    getCenter() : number[] {
         // get center of the map
         const center = this.map.getCenter();
         // return the center as an array
         return [center.lng, center.lat];
     }
 
-    getGeojson(layer_name: string): GeoJSON {
-        return this.geojson[layer_name];
-    }
 
-    getDrawnLineString() {
-        let data= {"type":"FeatureCollection","features":[{
+    /**
+     * Get the drawn line string TODO this needs to support multiple lines
+     */
+    getDrawnLineString(): GeoJSON {
+        let data: GeoJSON= {"type":"FeatureCollection","features":[{
                 type: "Feature",
                 geometry: {
                     type: "LineString",
@@ -443,6 +536,38 @@ class DjangoMapboxClient {
         return data;
     }
 
+    /**
+     * Finalise the line draw and add it to the map
+     * @param layer
+     * @param properties
+     */
+    finaliseLineDraw(layer: string = 'data', properties: {} = {}): void {
+        let geojson: GeoJSON =  this.getDrawnLineString();
+        geojson.features[0].properties = properties;
+        this.addGeojson(geojson,layer,false,{merge:true});
+        this.draw_actual_points=[];
+        this.map.getSource("draw-vertex").setData({"type":"FeatureCollection","features":[]});
+        this.map.getSource("draw-mid-points").setData({"type":"FeatureCollection","features":[]});
+        this.geojson["draw-end-points"] = {"type":"FeatureCollection","features":[]};
+        this.clearAllEvents();
+    }
+
+    /**
+     * Clear all events from the map
+     * @return {void}
+     */
+    clearAllEvents(): void {
+        for (let i in this.events) {
+            // @ts-ignore IS this working???
+            this.map.off('click', this.events[i].hook_actual);
+        }
+        this.events = [];
+    }
+
+    /**
+     * Add a click event to the map
+     * @param eventOption
+     */
     clickEvent(eventOption: eventOptions): void {
         this.addQueueOperation({
             type: 'add_event',
@@ -452,6 +577,10 @@ class DjangoMapboxClient {
         });
     }
 
+    /**
+     * resize the map
+     * @return {void}
+     */
     resize() {
         this.addQueueOperation({type: 'resize'});
     }
