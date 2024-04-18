@@ -256,14 +256,15 @@ class DjangoMapboxClient {
                     break;
                 case 'add_event':
                     const callback = (event: Event) => {
-                        if (operation.add_point === true) {
+                        // TODO: Add a point to the map do we need this, really the caller will always set the data
+                        /*if (operation.add_point === true) {
                             this.geojson[operation.layer_name].features.push({
                                 "type": "Feature",
                                 "geometry": {"coordinates": [event.lngLat.lng, event.lngLat.lat], "type": "Point"},
                                 "properties": {"icon": "point"}
                             });
                             this.map.getSource(operation.layer_name).setData(this.geojson[operation.layer_name]);
-                        }
+                        }*/
                         operation.hook([event.lngLat.lng, event.lngLat.lat], event);
                     }
 
@@ -552,6 +553,7 @@ class DjangoMapboxClient {
         this.draw_actual_points=[];
         this.map.getSource("draw-vertex").setData({"type":"FeatureCollection","features":[]});
         this.map.getSource("draw-mid-points").setData({"type":"FeatureCollection","features":[]});
+        this.map.getSource("draw-end-points").setData({"type":"FeatureCollection","features":[]});
         this.geojson["draw-end-points"] = {"type":"FeatureCollection","features":[]};
         this.clearAllEvents();
     }
@@ -585,7 +587,7 @@ class DjangoMapboxClient {
      * resize the map
      * @return {void}
      */
-    resize() {
+    resize(): void {
         this.addQueueOperation({type: 'resize'});
     }
 }
