@@ -1,4 +1,4 @@
-import {Map, NavigationControl} from 'maplibre-gl';
+import {Map, NavigationControl, Source} from 'maplibre-gl';
 // @ts-ignore
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 // @ts-ignore
@@ -196,8 +196,13 @@ class DjangoMapboxClient {
         this.processQueue();
     }
 
+    /**
+     * Process the queue of operations
+     *
+     */
     processQueue(): void {
-        let source;
+        let source: Source;
+        let self=this;
 
         if (this.loaded === true && this.queue.length > 0) {
             console.log(`Processing Queue ${this.queue.length} items left ${this.loaded}`);
@@ -216,7 +221,7 @@ class DjangoMapboxClient {
                         let features = data.features;
                         for (let i in features) {
                             if (features[i].properties && features[i].properties.id && features[i].properties.id === operation.values.id) {
-                                features.splice(i, 1);
+                                features.splice(Number(i), 1);
                                 break;
                             }
                         }
@@ -262,15 +267,14 @@ class DjangoMapboxClient {
                         operation.hook([event.lngLat.lng, event.lngLat.lat], event);
                     }
 
-                    if (operation.toggle === true) {
-                        for (let i in this.events) {
-                            this.map.off('click', this.events[i].hook_actual);
-                        }
-                        this.events = [];
-                    }
-                    operation.hook_actual = callback;
+                    if (operation.toggle === true)
+                        self.clearAllEvents();
+
+                    // Make an event object
+                    let event: eventOptions = {hook: operation.hook, layer: operation.layer_name, clear: operation.toggle};
+                    event.hook_actual = callback;
                     this.map.on('click', callback);
-                    this.events.push(operation);
+                    this.events.push(event);
                     break;
                 case 'resize':
                     this.map.resize();
