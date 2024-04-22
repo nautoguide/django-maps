@@ -1,4 +1,4 @@
-import {Map, NavigationControl, Source} from 'maplibre-gl';
+import {Map, MapGeoJSONFeature, NavigationControl, Source} from 'maplibre-gl';
 // @ts-ignore
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 // @ts-ignore
@@ -46,7 +46,7 @@ interface Icon {
 
 // Queue Operation
 interface QueueOperation {
-    type: "add_layer" | "remove_layer" | "add_geojson" | "clear_layer" | "set_visibility" | "add_event" | "resize" | "line_draw" | "set_center" | "delete_feature";
+    type: "add_layer" | "remove_layer" | "add_geojson" | "clear_layer" | "set_visibility" | "add_event" | "resize" | "line_draw" | "set_center" | "delete_feature" | "move_feature";
     layer_name?: string; // This makes layer_name optional
     data?: GeoJSON;
     url?: string;
@@ -197,6 +197,21 @@ class DjangoMapboxClient {
     }
 
     /**
+     * Add ids to the geojson data
+     *
+     * We need unique ids for each feature
+     * @param data
+     */
+    _addIdsToGeojson(data: GeoJSON) {
+        for (let i in data.features) {
+            if (!data.features[i].properties.id) {
+                data.features[i].properties.id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            }
+        }
+        return data;
+    }
+
+    /**
      * Process the queue of operations
      *
      */
@@ -205,8 +220,11 @@ class DjangoMapboxClient {
         let self=this;
 
         if (this.loaded === true && this.queue.length > 0) {
-            console.log(`Processing Queue ${this.queue.length} items left ${this.loaded}`);
             let operation = this.queue.shift();
+            console.log(`Processing Queue ${operation.type}`);
+            if(operation.data)
+                console.log(operation.data);
+
             switch (operation.type) {
                 case 'line_draw':
                     this._LineDrawMode(operation);
@@ -228,9 +246,24 @@ class DjangoMapboxClient {
                         source.setData(data);
                     }
                     break;
-
+                case 'move_feature':
+                    source=this.map.getSource(operation.layer_name);
+                    if(this.geojson[operation.layer_name]) {
+                        let data = this.geojson[operation.layer_name]
+                        let features = data.features;
+                        for (let i in features) {
+                            if (features[i].properties && features[i].properties.id && features[i].properties.id === operation.values.id) {
+                                features[i].geometry.coordinates = operation.values.lonLat;
+                                break;
+                            }
+                        }
+                        source.setData(data);
+                    }
+                    break;
                 case 'add_geojson':
                     source=this.map.getSource(operation.layer_name);
+                    // Add ids to the geojson
+                    operation.data = this._addIdsToGeojson(operation.data);
                     if(operation.values&&operation.values['merge']===true&&this.geojson[operation.layer_name]) {
                         // Merge the data
                         let new_data = operation.data;
@@ -238,11 +271,14 @@ class DjangoMapboxClient {
                         for(let i in new_data.features) {
                             old_data.features.push(new_data.features[i]);
                         }
+                        // copy the old data
+                        let copyData=JSON.parse(JSON.stringify(old_data));
                         source.setData(old_data);
-                        this.geojson[operation.layer_name] = old_data;
+                        this.geojson[operation.layer_name] = copyData;
                     } else {
+                        let copyData=JSON.parse(JSON.stringify(operation.data));
                         source.setData(operation.data);
-                        this.geojson[operation.layer_name] = operation.data;
+                        this.geojson[operation.layer_name] = copyData;
                     }
                     if (this.geojson[operation.layer_name].features.length > 0) {
                         if(operation.toggle === true) {
@@ -250,14 +286,31 @@ class DjangoMapboxClient {
                             this.map.fitBounds(bbox, {padding: this.options.padding, maxZoom: this.options.maxZoom});
                         }
                     }
+                    console.log(this.geojson[operation.layer_name])
                     break;
                 case 'clear_layer':
                     this.map.clearLayer(operation.layer_name);
                     break;
                 case 'add_event':
                     const callback = (event: Event) => {
+                        // See if there is a feature(s) here:
+                        let features: MapGeoJSONFeature[] = [];
+                        let actual_features=[];
+
+                        if (operation.layer_name) {
+                            // Filters do not seem to work correctly for line strings because reasons
+                            let layers=operation.layer_name.split(',');
+                            features = self.map.queryRenderedFeatures(event.point, {layers: layers});
+                            // we need to get the actual feature from the geojson not these ones as they are in a crazy state
+                            for(let i in features) {
+                                let feature = self.getFeature(layers[0],features[i].properties.id);
+                                if(feature) {
+                                    actual_features.push(feature);
+                                }
+                            }
+                        }
                         // @ts-ignore
-                        operation.hook([event.lngLat.lng, event.lngLat.lat], event);
+                        operation.hook([event.lngLat.lng, event.lngLat.lat], event, actual_features);
                     }
 
                     if (operation.toggle === true) {
@@ -387,7 +440,8 @@ class DjangoMapboxClient {
         });
 
         // json contains a line string we need to convert to points in draw_actual_points
-        if(operation&&operation.data&&operation.data.features&&operation.data.features.length>0&&operation.data.features[0].geometry&&operation.data.features[0].geometry.coordinates&&operation.data.features[0].geometry.coordinates.length>0) {
+        if(operation.data&&operation.data.features&&operation.data.features.length>0&&operation.data.features[0].geometry&&operation.data.features[0].geometry.coordinates&&operation.data.features[0].geometry.coordinates.length>0) {
+            console.log(operation.data)
             this.draw_actual_points=operation.data.features[0].geometry.coordinates;
             // Create a line between all the points
             let line = {
@@ -398,7 +452,7 @@ class DjangoMapboxClient {
                 }
             };
             // Draw the line on the map
-            window.map.getSource("draw-vertex").setData(line);
+            self.map.getSource("draw-vertex").setData(line);
             self._drawLine();
         }
 
@@ -432,6 +486,7 @@ class DjangoMapboxClient {
                 }
             }
         }
+
         window.map.clickEvent({"hook":addPoint,"clear":true});
     }
 
@@ -455,8 +510,8 @@ class DjangoMapboxClient {
      * @param toggle - enable or disable
      * @constructor
      */
-    LineDrawMode(layer_name: string, toggle: boolean = true) {
-        this.addQueueOperation({type: 'line_draw', layer_name: layer_name, toggle: toggle});
+    LineDrawMode(layer_name: string, toggle: boolean = true, features?: GeoJSON) {
+        this.addQueueOperation({type: 'line_draw', layer_name: layer_name, toggle: toggle, data: features});
     }
 
     /**
@@ -485,6 +540,10 @@ class DjangoMapboxClient {
         this.addQueueOperation({type: 'delete_feature', layer_name: layer_name, values: {id: feature_id}});
     }
 
+    moveFeaturePoint(layer_name: string, feature_id: string, lonLat: any[]) {
+        this.addQueueOperation({type: 'move_feature', layer_name: layer_name, values: {id: feature_id, lonLat: lonLat}});
+    }
+
     /**
      * Get a layer as a geojson object
      * @param layer_name
@@ -492,6 +551,17 @@ class DjangoMapboxClient {
      */
     getGeojsonLayer(layer_name: string) {
         return this.geojson[layer_name];
+    }
+
+    getFeature(layer_name: string, feature_id: string) {
+        let features = this.geojson[layer_name].features;
+        console.log(features);
+        for (let i in features) {
+            if (features[i].properties && features[i].properties.id && features[i].properties.id === feature_id) {
+                return features[i];
+            }
+        }
+        return null;
     }
 
     /**
@@ -539,16 +609,25 @@ class DjangoMapboxClient {
      * @param layer
      * @param properties
      */
-    finaliseLineDraw(layer: string = 'data', properties: {} = {}): void {
-        let geojson: GeoJSON =  this.getDrawnLineString();
-        geojson.features[0].properties = properties;
-        this.addGeojson(geojson,layer,false,{merge:true});
+    finaliseLineDraw(layer: string = 'data', properties: {} = {},mode: string = 'save'): void {
+        this.clearAllEvents();
+        if(mode==="save") {
+            let geojson: GeoJSON = this.getDrawnLineString();
+            geojson.features[0].properties = properties;
+            // Check we have more than 2 points
+            if (geojson.features[0].geometry.coordinates.length < 2) {
+                return;
+            }
+            geojson = this._addIdsToGeojson(geojson);
+            this.addGeojson(geojson, layer, false, {merge: true});
+        }
         this.draw_actual_points=[];
         this.map.getSource("draw-vertex").setData({"type":"FeatureCollection","features":[]});
         this.map.getSource("draw-mid-points").setData({"type":"FeatureCollection","features":[]});
         this.map.getSource("draw-end-points").setData({"type":"FeatureCollection","features":[]});
         this.geojson["draw-end-points"] = {"type":"FeatureCollection","features":[]};
-        this.clearAllEvents();
+        this.geojson["draw-mid-points"] = {"type":"FeatureCollection","features":[]};
+        this.geojson["draw-vertex"] = {"type":"FeatureCollection","features":[]};
     }
 
     /**
