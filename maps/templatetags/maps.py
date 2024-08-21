@@ -129,7 +129,7 @@ def mapbox_cluster(**kwargs):
     allClick = kwargs.get('allClick', False)
     zoom = kwargs.get('zoom', 10)
     padding = kwargs.get('padding', 50)
-
+    cluster_font = kwargs.get('cluster_font', None)
     return render_to_string('mapbox_insert_cluster.html',
                             {'params':
                                  {'links': str(links), 'json_url': str(json_url), 'query': str(query),
@@ -143,5 +143,8 @@ def mapbox_cluster(**kwargs):
                                   'clickFunction': str(clickFunction),
                                   'locationFunction': str(locationFunction),
                                   'nearFunction': str(nearFunction), 'threshold': threshold,
-                                  'controls': str(controls), 'geojson': geojson, 'cluster': 'True'}})
+                                  'controls': str(controls),
+                                  'geojson': geojson,
+                                  'cluster': 'True',
+                                  'cluster_font': str(cluster_font)}})
 

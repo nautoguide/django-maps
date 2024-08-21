@@ -1,6 +1,4 @@
 
-
-
 function mapboxClient( params ) {
 	let queue = [];
 	let loaded = false;
@@ -25,7 +23,7 @@ function mapboxClient( params ) {
 	let events=[];
 	const clusterIndex = new Supercluster({
 		radius: 50,
-		maxZoom: 12
+		maxZoom: 14,
 	});
 
 	window.geojson={'data':{"type":"FeatureCollection","features":[]}};
@@ -94,6 +92,7 @@ function mapboxClient( params ) {
 				id: 'clusters-outer',
 				type: 'circle',
 				source: 'clusters',
+				filter: ['has', 'point_count'],
 				paint: {
 					'circle-radius': [
 						'step',
@@ -114,6 +113,7 @@ function mapboxClient( params ) {
 				id: 'clusters',
 				type: 'circle',
 				source: 'clusters',
+				filter: ['has', 'point_count'],
 				paint: {
 					'circle-radius': [
 						'step',
@@ -139,8 +139,6 @@ function mapboxClient( params ) {
 				}
 			});
 
-
-
 			map.addLayer({
 
 				id: 'cluster-labels',
@@ -148,7 +146,7 @@ function mapboxClient( params ) {
 				source: 'clusters',
 				filter: ['has', 'point_count'],
 				'layout': {
-					"text-font": ["Open Sans Regular"],
+					"text-font": [params.cluster_font || "Open Sans Regular"],
 					'text-field': ['get', 'point_count'],
 					'text-variable-anchor': ['center', 'bottom', 'left', 'right'],
 					'text-radial-offset': 0.5,
@@ -160,14 +158,13 @@ function mapboxClient( params ) {
 				}
 			});
 
-
 			map.addLayer({
 				id: 'unclustered-points',
 				type: 'symbol',
 				source: 'clusters',
 				filter: ['!=', 'cluster', true],
 				layout: {
-					'icon-image': ['get', 'icon'],
+					'icon-image': ['get', 'icon'], //get the icon from the icon field in the feature
 					'icon-size': 1, // Set the icon size
 					'icon-allow-overlap': true,
 					'icon-anchor': 'bottom'
@@ -194,6 +191,7 @@ function mapboxClient( params ) {
 		}
 		process_queue();
 	});
+
 	if(params.debug && params.debug==='True') {
 		window.map.on('click', () => {
 			// Print the current map center and zoom
@@ -209,34 +207,24 @@ function mapboxClient( params ) {
 				.then(response => response.json())
 				.then(data => {
 					window.map.addGeojson(data);
-					/*window.geojson['data'] = data;
-					window.map.getSource('data').setData(data);
-					if (params.links === 'True') {
-						const lineSource = createLineSource(data.features);
-						window.map.getSource('line-source').setData(lineSource);
-					}
-					if(params.fit === 'True') {
-						const bbox = turf.bbox(data);
-						window.map.fitBounds(bbox, {padding: params.padding, maxZoom: options.maxZoom, animate: false})
-					}
-					if (params.location === 'True' && currentLocation) {
-						checkNearPoints(currentLocation[0], currentLocation[1]);
-					}*/
+
 				})
 				.catch(error => console.error(error));
 		}
 	}
 
-	map.on('click', 'unclustered-points', (event) => {
-		const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
-		if (features.length > 0 && click_url !== 'None') {
-			params.click_url=params.click_url.replace('${id}',features[0].properties.id)
-			window.location = params.click_url;
-		}
-		if( typeof params.clickFunction === 'function') {
-			params.clickFunction(features[0].properties.id);
-		}
-	});
+	// TODO triple check that this code is not used for NMRN
+	// window.map.on('click', 'unclustered-points', (event) => {
+	// 	setStep(event)
+	// 	// const features = map.queryRenderedFeatures(event.point, {layers: ['unclustered-points']});
+	// 	// if (features.length > 0 && click_url !== 'None') {
+	// 	// 	params.click_url=params.click_url.replace('${id}',features[0].properties.id)
+	// 	// 	window.location = params.click_url;
+	// 	// }
+	// 	// if( typeof params.clickFunction === 'function') {
+	// 	// 	params.clickFunction(features[0].properties.id);
+	// 	// }
+	// });
 
 	window.map.on('click', 'clusters', (e) => {
 		const clusterCoordinates = e.features[0].geometry.coordinates;
@@ -303,8 +291,6 @@ function mapboxClient( params ) {
 			features: lines,
 		};
 	}
-
-
 
 	function calculateDistance(lat1, lon1, lat2, lon2) {
 		const R = 6371e3; // Earth radius in meters
@@ -472,18 +458,20 @@ function mapboxClient( params ) {
 
 
 	function clusterLoader() {
+
 		fetch(`${params.json_url}?p=${page}&ps=500`)
 			.then(response => response.json())
 			.then(data => {
-
 				window.geojson['data'].features=[...window.geojson['data'].features,...data.features];
 				clusterIndex.load(window.geojson['data'].features);
 				map.getSource('clusters').setData(getClusters());
-				if(data.more===false) {
+				if(data.more===undefined || data.more===false) {
 					let element = document.getElementById("map_spin");
-					element.classList.add("hidden")
-					//const bbox = turf.bbox(globalGeojson);
-					//map.fitBounds(bbox, {padding: 200})
+					if(element) {
+						element.classList.add("hidden")
+					}
+					window.map.zoomToExtent()
+
 				} else {
 					page++;
 					map.triggerRepaint();
@@ -493,24 +481,42 @@ function mapboxClient( params ) {
 			}).catch(error => console.error(error));
 	}
 
+	function filterLoader() {
+		console.log('Filter Loader')
+		fetch(params.json_url, {
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify(window.map_filter)
+		}).then(response => response.json())
+			.then(data => {
+				window.geojson['data'].features=data.features;
+				clusterIndex.load(window.geojson['data'].features);
+				map.getSource('clusters').setData(getClusters());
+				map.triggerRepaint();
+
+			}).catch(error => console.error(error));
+	}
+
 	function pointDecoder(point) {
 		let decoded_point=point;
 		if(typeof decoded_point === 'string') {
-			if(decoded_point.startsWith('POINT')) {
-				decoded_point=decoded_point.replace('POINT (','');
-				decoded_point=decoded_point.replace(')','');
-				decoded_point=decoded_point.split(' ');
-				decoded_point=[parseFloat(decoded_point[0]),parseFloat(decoded_point[1])];
-				return decoded_point;
-			} else {
-				decoded_point = JSON.parse(decoded_point)
-				return decoded_point.coordinates;
+			    // Use a regular expression to match the coordinates rather than replace as it copes with SRID
+				const regex = /POINT\s*\(\s*(-?\d+\.?\d*)\s+(-?\d+\.?\d*)\s*\)/;
+				const match = point.match(regex);
+				if (match) {
+					const longitude = parseFloat(match[1]);
+					const latitude = parseFloat(match[2]);
+					return [longitude, latitude];
+				} else {
+					decoded_point = JSON.parse(decoded_point)
+					return decoded_point.coordinates;
+				}
 			}
-		}
 		logDebug(`${point} does not seem valid`);
 	}
 	// External functions
 
+	window.map.filterLoader = filterLoader;
 
 	window.map.debug = function () {
 		debug = !debug;
@@ -812,6 +818,7 @@ function mapboxClient( params ) {
 	}
 
 	function process_queue() {
+
 		if(loaded&&queue.length>0) {
 			if(params.cluster==='True') {
 				clusterIndex.load(window.geojson['data'].features);
@@ -836,5 +843,4 @@ function mapboxClient( params ) {
 			queue=[];
 		}
 	}
-
 }
