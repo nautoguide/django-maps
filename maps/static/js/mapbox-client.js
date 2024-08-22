@@ -482,7 +482,6 @@ function mapboxClient( params ) {
 	}
 
 	function filterLoader() {
-		console.log('Filter Loader')
 		fetch(params.json_url, {
 			method: 'POST',
 			headers: {'Content-Type': 'application/json'},
@@ -492,7 +491,8 @@ function mapboxClient( params ) {
 				window.geojson['data'].features=data.features;
 				clusterIndex.load(window.geojson['data'].features);
 				map.getSource('clusters').setData(getClusters());
-				map.triggerRepaint();
+				map.triggerRepaint()
+				map.zoomToExtent()
 
 			}).catch(error => console.error(error));
 	}
