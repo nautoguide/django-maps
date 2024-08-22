@@ -6,7 +6,7 @@ from django.contrib.gis.geos import (
     Point,
 )
 
-# Updated by Dave to force the SRID to 4326 on in and out operations
+# Updated by Dave in August to force the SRID to 4326 on in and out operations
 class Location(Field):
     description = "A custom field to store a GEOMETRY type and return GeoJSON"
 

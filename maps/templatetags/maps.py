@@ -108,6 +108,7 @@ def mapbox_simple_v2(**kwargs):
                                                                    'nearFunction': str(nearFunction), 'threshold': threshold,
                                                                    'controls': controls, 'geojson': geojson})})
 
+#updated by Dave
 @register.simple_tag
 def mapbox_cluster(**kwargs):
     style = kwargs.get('style', '/mapfiles/?file=cartodb-xyz.json')
