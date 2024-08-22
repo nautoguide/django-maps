@@ -1,4 +1,4 @@
-//updated by Dave
+//updated by Dave Barter again
 function mapboxClient( params ) {
 	let queue = [];
 	let loaded = false;
