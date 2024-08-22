@@ -738,7 +738,6 @@ function mapboxClient( params ) {
 
 	function _fuzzyMatch(point1,point2,precision) {
 		precision=precision||0.0001;
-		//console.log(`points: ${point1}:${point2} diff: ${point1-point2} - precision: ${precision}`);
 		if(point1===point2&&point1===point2)
 			return true;
 		if(point1-precision<=point2&&point1+precision>=point2&&point1-precision<=point2&&point1+precision>=point2)
