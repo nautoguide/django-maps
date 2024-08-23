@@ -563,6 +563,17 @@ function mapboxClient( params ) {
 		}
 	}
 
+	window.map.zoomSelect = (type, id,zoom= 14) => {
+			const findByTypeId = (type, id) =>{
+				return window.geojson['data'].features.filter(obj => obj.properties.type===type && obj.properties.id===id)
+			}
+
+			const features = findByTypeId(type,id)
+			if(features.length > 0) {
+				window.map.jumpTo({center: features[0].geometry.coordinates, zoom: zoom});
+			}
+	}
+
 	window.map.clickEvent = function (options) {
 		// hook,add_point,layer
 		// merge options with defaults
