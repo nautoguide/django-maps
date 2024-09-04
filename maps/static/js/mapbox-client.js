@@ -459,7 +459,8 @@ function mapboxClient( params ) {
 
 	function clusterLoader() {
 
-		fetch(`${params.json_url}?p=${page}&ps=500`)
+		const json_url = params.json_url.includes('?') ? params.json_url : `${params.json_url}?p=${page}&ps=500`
+		fetch(json_url)
 			.then(response => response.json())
 			.then(data => {
 				window.geojson['data'].features=[...window.geojson['data'].features,...data.features];
