@@ -2,7 +2,8 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.conf import settings
-
+from django.template import TemplateDoesNotExist
+from django.http import Http404
 
 def mapfiles(request):
     host = request.get_host()
@@ -15,6 +16,7 @@ def mapfiles(request):
     api_key = None
     if hasattr(settings, 'MAP_API_KEY'):
         api_key = settings.MAP_API_KEY
+
     context = {
         'host': host,
         'scheme': scheme,
@@ -23,7 +25,11 @@ def mapfiles(request):
     }
     file_actual = f'map_styles/{file}'
 
-    rendered_template = render(request, file_actual, context)
+    try:
+        rendered_template = render(request, file_actual, context)
+    except TemplateDoesNotExist:
+        raise Http404("Template not found")
+
     json_data = json.loads(rendered_template.content.decode())
 
     # Load json file from the includes
