@@ -1,11 +1,11 @@
 {
   "version": 8,
   "sprite": "https://geovey.co.uk/tiles/sprites/os/sprite",
-  "glyphs": "https://api.os.uk/maps/vector/v1/vts/resources/fonts/{fontstack}/{range}.pbf?key={{ MAP_API_KEY }}",
+  "glyphs": "{{ scheme }}://{{ host }}/mapsproxy/font/{fontstack}/{range}",
   "sources": {
     "esri": {
       "type": "vector",
-      "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts.json",
+      "url": "{{ scheme }}://{{ host }}/mapfiles/?file=os-vts-proxy.json",
       "attribution": "Contains OS data © Crown copyright and database right 2023"
     },
     "data": {
