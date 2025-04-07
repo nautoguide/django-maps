@@ -253,6 +253,7 @@ function mapboxClient( params ) {
 	}
 
 	function loadIcons(icons) {
+
 		icons.forEach((icon) => {
 			// Make a random uuid to use as the image name
 			const uuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
