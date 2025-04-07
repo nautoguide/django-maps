@@ -10,7 +10,7 @@
   "sources": {
     "openmaptiles": {
       "type": "vector",
-      "tiles": ["https://geovey.co.uk/tiles/osm/{z}/{x}/{y}.pbf"],
+      "tiles": ["https://geovey.co.uk/tiles/osm_gb_irl/{z}/{x}/{y}.pbf"],
       "maxzoom": 14
     }
   },
