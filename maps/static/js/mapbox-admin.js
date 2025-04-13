@@ -23,7 +23,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 	//let center=map_element.dataset.center;
 	let options = {
 		container: widgetId,
-		style: '/mapfiles/?file=os-styles.json',
+		style: '/mapfiles/?file=osm-basic.json',
 		maxZoom: 25,
 		minZoom: 0,
 		pitch: 0,
