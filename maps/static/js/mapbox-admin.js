@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	});
 });
+
 function mapboxAdminFromElement(element) {
 	const widgetId = element.id;
 	const widgetValue = element.dataset.value;
@@ -19,6 +20,7 @@ function mapboxAdmin(widgetId, widgetValue) {
 	let clickFunction=map_element.dataset.clickfunction;
 	if(clickFunction!==undefined)
 		clickFunction=window[clickFunction];
+
 
 	//let center=map_element.dataset.center;
 	let options = {
