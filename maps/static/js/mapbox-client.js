@@ -184,7 +184,7 @@ function mapboxClient( params ) {
 				source: 'clusters',
 				filter: ['has', 'point_count'],
 				'layout': {
-					"text-font": [params.cluster_font || "Open Sans Regular"],
+					"text-font": [(params.cluster_font ? params.cluster_font !== 'None' : null) || "Open Sans Regular"],
 					'text-field': ['get', 'point_count'],
 					'text-variable-anchor': ['center', 'bottom', 'left', 'right'],
 					'text-radial-offset': 0.5,
