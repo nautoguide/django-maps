@@ -129,6 +129,5 @@
         "icon-opacity": 1
       }
     }
-  ],
-  "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf"
+  ]
 }
