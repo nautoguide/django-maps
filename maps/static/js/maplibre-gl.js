@@ -45,4 +45,3 @@
     return maplibregl$1;
 
 }));
-//# sourceMappingURL=maplibre-gl.js.map
